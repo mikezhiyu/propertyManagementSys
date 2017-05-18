@@ -1,0 +1,142 @@
+
+{% extends "master.html.twig" %}
+
+{% block title %}Add Property{% endblock %}
+
+{% block content %}
+
+    {% if errorList %}
+        <ul class="errorList">
+            {% for error in errorList %}
+                <li>{{ error }}</li>
+                {% endfor %}
+        </ul>
+    {% endif %}
+
+
+    <div class="container">  
+        <div id="signupbox" style="margin-left:240px;margin-top: 50px;margin-bottom: 50px" class="mainbox col-md-6 col-md-offset-3 col-sm-8 col-sm-offset-2">
+            <div class="panel panel-info">
+                <div class="panel-heading">
+                    <div class="panel-title">Sign Up</div>
+                    <div style="float:right; font-size: 85%; position: relative; top:-10px"><a id="signinlink" href="/login" >Sign In</a></div>
+                </div>  
+                <div class="panel-body" >
+                    <form id="signupform" class="form-horizontal" role="form" method="post" enctype="multipart/form-data">
+                        <div id="signupalert" style="display:none" class="alert alert-danger">
+                            <p>Error:</p>
+                            <span></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="text" class="col-md-3 control-label">Owner</label>
+                            <div class="col-md-9">
+                                <input type="text" class="form-control" name="Owner" placeholder="Owner" value="{{p.name}}">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="Postalcode" class="col-md-3 control-label">Postalcode</label>
+                            <div class="col-md-9">
+                                <input type="text" class="form-control" name="postCode" value="{{v.postCode}}" placeholder="Postalcode">
+
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="Address" class="col-md-3 control-label">Address</label>
+                            <div class="col-md-9">
+                                <input type="text" class="form-control" name="address" value="{{v.address}}" placeholder="Address">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="City" class="col-md-3 control-label">City</label>
+                            <div class="col-md-9">
+                                <input type="text" class="form-control" name="city" value="{{v.city}}" placeholder="City" >
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="Phone" class="col-md-3 control-label">Phone</label>
+                            <div class="col-md-9">
+                                <input type="text" class="form-control" name="phoneNumber" value="{{v.phoneNumber}}" placeholder="Phone Number">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="numberOfBedroom" class="col-md-3 control-label">Bedroom Number</label>
+                            <div class="col-md-9">
+                                <input type="text" class="form-control" name="numberOfBedroom" value="{{v.numberOfBedroom}}" placeholder="Bedroom Number">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="Price" class="col-md-3 control-label">Asking Price</label>
+                            <div class="col-md-9">
+                                <input type="text" class="form-control" name="price" value="{{v.price}}" placeholder="Asking Price">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                                <label for="yearofBuild" class="col-md-3 control-label">Year of Building</label>
+                                <div class="col-md-9">
+                                <input type="text" class="form-control" name="year" value="{{v.yearOfBuild}}" placeholder="Year of Building">
+                                </div>
+                        </div>     
+                        <div class="form-group">
+                            <label for="propertyType" class="col-md-3 control-label">Property Type</label>
+                            <div class="col-md-9">
+                                <input type="text" class="form-control" name="propertyType" value="{{v.propertyType}}" placeholder="Property Type">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="area" class="col-md-3 control-label">Area (square feet)</label>
+                            <div class="col-md-9">
+                                <input type="text" class="form-control" name="area" value="{{v.area}}" placeholder="Area (square feet)">
+                            </div>
+                        </div>
+
+
+                        <div class="form-group">
+                            <!-- Button -->                                        
+                            <div class="col-md-offset-3 col-md-9">
+                                <input type="submit" value="Add house">
+                            </div>
+                        </div>
+
+                        <div style="border-top: 1px solid #999; padding-top:20px"  class="form-group">
+
+                            <div class="col-md-offset-3 col-md-9">
+                                <button id="btn-fbsignup" type="button" class="btn btn-primary"><i class="icon-facebook"></i>   Sign Up with Facebook</button>
+                            </div>  
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        </div> 
+    </div>
+
+
+{# 
+    <form method="post" enctype="multipart/form-data">
+        Postal Code <input type="text" name="postalCode" value="{{v.postCode}}"><br>
+        Address <input type="text" name="address" value="{{v.address}}"><br>
+
+        Image: <input type="file" name="image"><br>
+        {% if v.imagePath %}
+            <img width="50" src="/{{v.imagePath}}">
+        {% endif %}
+        Phone Number <input type="number" name="phonenumber" value="{{v.phoneNumber}}" ><br>
+        Number of Bedroom <input type="number" name="numberofbedroom" value="{{v.numberOfBedroom}}"><br>
+        Price <input type="number" name="price" value="{{v.price}}" ><br>
+        Year of build <input type="number" name="Year" value="{{v.yearOfBuild}}" ><br>
+        // status<input type="text" name="status" value="{{v.status}}" ><br>
+
+
+        <input type="submit" value="{{operation}} property">
+        <input type="submit" value="Edit">
+        <input type="button" value="Delete">
+
+    </form>
+#}
+
+
+{% endblock content %}
+
+

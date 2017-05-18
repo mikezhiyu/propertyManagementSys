@@ -1,0 +1,14 @@
+{% extends "master.html.twig" %}
+
+{% block title %}User registration successful{% endblock %}
+{% block headExtra %}
+    <script type="text/javascript">
+        window.setTimeout(function () {
+            window.location.href = '/login';
+        }, 7000);
+    </script>
+{% endblock %}
+{% block content %}
+    <p>Registration successful. You may now <a href="/login">login</a>. or will be directet to login page in 5sec</p>
+{% endblock content %}
+
