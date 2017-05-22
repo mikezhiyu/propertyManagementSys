@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: May 21, 2017 at 11:57 PM
+-- Generation Time: May 22, 2017 at 09:09 PM
 -- Server version: 10.1.21-MariaDB
 -- PHP Version: 7.1.1
 
@@ -94,8 +94,28 @@ INSERT INTO `imagepaths` (`id`, `houseId`, `imagePath`, `imageMimeType`) VALUES
 (21, 19, 'uploads/house5.4.jpeg', 'image/jpeg'),
 (22, 23, 'uploads/house6.1.jpeg', 'image/jpeg'),
 (23, 23, 'uploads/house6.2.jpeg', 'image/jpeg'),
-(24, 23, 'uploads/house6.3.jpeg', 'image/jpeg'),
-(25, 23, 'uploads/house6.4.jpeg', 'image/jpeg');
+(24, 23, 'uploads/house6.3.jpeg', 'image/jpeg');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `passresets`
+--
+
+CREATE TABLE `passresets` (
+  `ID` int(11) NOT NULL,
+  `userID` int(11) NOT NULL,
+  `secretToken` varchar(50) NOT NULL,
+  `expiryDateTime` datetime NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Dumping data for table `passresets`
+--
+
+INSERT INTO `passresets` (`ID`, `userID`, `secretToken`, `expiryDateTime`) VALUES
+(15, 1, 'LIhj42zc2b1KoKwp5fALyzVERJeTS8NcHz6b2Gwb28AAjEh39d', '2017-05-22 21:04:27'),
+(16, 15, 'JKw3kssRT13Mi9aglEAfvk1MweHV9jbQahUWvs2XbWenfBMf27', '2017-05-22 21:12:21');
 
 -- --------------------------------------------------------
 
@@ -117,7 +137,8 @@ CREATE TABLE `users` (
 INSERT INTO `users` (`id`, `email`, `password`, `name`) VALUES
 (1, 'chen@c.c', 'pop1234', 'Chen Chen'),
 (2, 'Yu@zhi.com', 'Jac12345', 'Yuzhi'),
-(3, 'flavie@g.com', 'Jac12345', 'flavie');
+(3, 'flavie@g.com', 'Jac12345', 'flavie'),
+(15, 'E.amanollahi@gmail.com', 'AAAaaa111', 'Amanollahi');
 
 --
 -- Indexes for dumped tables
@@ -137,6 +158,13 @@ ALTER TABLE `imagepaths`
   ADD PRIMARY KEY (`id`),
   ADD KEY `houseId` (`houseId`),
   ADD KEY `houseId_2` (`houseId`);
+
+--
+-- Indexes for table `passresets`
+--
+ALTER TABLE `passresets`
+  ADD PRIMARY KEY (`ID`),
+  ADD UNIQUE KEY `userID` (`userID`);
 
 --
 -- Indexes for table `users`
@@ -160,10 +188,15 @@ ALTER TABLE `houses`
 ALTER TABLE `imagepaths`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
 --
+-- AUTO_INCREMENT for table `passresets`
+--
+ALTER TABLE `passresets`
+  MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
+--
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
 --
 -- Constraints for dumped tables
 --

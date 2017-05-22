@@ -7,7 +7,7 @@ require_once 'vendor/autoload.php';
 require_once 'local.php';
 
 
-/* DB::$encoding = 'utf8'; =============
+/* DB::$encoding = 'utf8';
   DB::$user = 'cp4776_pro-em ';
   DB::$dbName = 'cp4776_propertymanagement';
   DB::$password = "rWVaKK@0pETJ";
@@ -84,7 +84,10 @@ $app->get('/', function() use ($app) {
 $app->get('/index', function() use ($app) {
     $app->render('index.html.twig');
 });
+$app->get('/contactus', function() use ($app) {
 
+    $app->render("contactus.html.twig");
+});
 
 
 //============================
@@ -183,19 +186,13 @@ $app->post('/login', function() use ($app) {
     } else {
         unset($user['password']);
         $_SESSION['user'] = $user;
-        $houseList = DB::query("SELECT * FROM houses");
-        $HouseListWithImage = array();
-        foreach ($houseList as $h) {
-            $houseId = $h['id'];
-            $path = DB::queryFirstRow("SELECT imagepath FROM imagepaths WHERE houseId=%i", $houseId);
-            $h['imagePath'] = $path['imagepath'];
-            array_push($HouseListWithImage, $h);
-        }
-        $app->render("list_property.html.twig", array(
-            'houseList' => $HouseListWithImage
-        ));
+        $app->render('login_success.html.twig');
     }
 });
+
+
+
+
 
 
 //=================================
@@ -210,10 +207,9 @@ $app->get('/propertydetail/:id', function($id) use ($app) {
 });
 
 //=============================
-//******* HOUSE LIST and search*********
+//******* HOUSE LIST *********
 
-$app->get(':op', function($op) use ($app) {
-
+$app->get('/list', function() use ($app) {
     $houseList = DB::query("SELECT * FROM houses");
     $HouseListWithImage = array();
     foreach ($houseList as $h) {
@@ -225,141 +221,16 @@ $app->get(':op', function($op) use ($app) {
     $app->render("list_property.html.twig", array(
         'houseList' => $HouseListWithImage
     ));
-})->conditions(array('op' => '(/list|/)'
-));
-
-$app->post(':op' ,function($op) use ($app) {
-
-    $search = $app->request()->post('search1');
-    $numberOfBedroom = $app->request()->post('numberOfBedroom1');
-    $price = $app->request()->post('price1');
-    $propertyType = $app->request()->post('propertyType1');
-
-    // search function of fields
-    $where = new WhereClause('and');
-    if ($numberOfBedroom != "Bedrooms") {
-        if (strpos($numberOfBedroom, "more")) {
-            $where->add('numberOfBedroom>=%i', 4);
-        } else {
-            $where->add('numberOfBedroom=%i', substr($numberOfBedroom, 0, 1));
-        }
-    }
-    if ($propertyType != "Type") {
-        $where->add('propertyType=%s', $propertyType);
-    }
-
-    if ($price != "Price") {
-        if (strpos($price, "less")) {
-            $where->add('price<%s', substr($price, 1, 6));
-        } else if (strpos($price, "above")) {
-            $where->add('price>%s', substr($price, 1, 6));
-        } else {
-            $where->add('price between %s and %s', substr($price, 1, 6), substr($price, 11, 6));
-        }
-    }
-    $houseList = DB::query("SELECT * FROM houses WHERE %l", $where);
-    $HouseListWithImage = array();
-    if ($search) {
-        foreach ($houseList as $h) {
-            $search = strtolower($search);
-            $h_lower = array_map('strtolower', $h);
-            $bool = FALSE;
-            foreach ($h_lower as $hl) {
-                if (stripos($hl, $search) !== false) {
-                    $bool = TRUE;
-                }
-            }
-            if ($bool) {
-                $houseId = $h['id'];
-                $path = DB::queryFirstRow("SELECT imagepath FROM imagepaths WHERE houseId=%i", $houseId);
-                $h['imagePath'] = $path['imagepath'];
-                array_push($HouseListWithImage, $h);
-            }
-        }
-    } else {
-        foreach ($houseList as $h) {
-            $houseId = $h['id'];
-            $path = DB::queryFirstRow("SELECT imagepath FROM imagepaths WHERE houseId=%i", $houseId);
-            $h['imagePath'] = $path['imagepath'];
-            array_push($HouseListWithImage, $h);
-        }
-    }
-    $app->render("list_property.html.twig", array(
-        'houseList' => $HouseListWithImage
-    ));
-})->conditions(array('op' => '(/|/index)'
-));
-
-$app->post(':op', function($op) use ($app) {
-
-    $search = $app->request()->post('search');
-    $numberOfBedroom = $app->request()->post('numberOfBedroom');
-    $price = $app->request()->post('price');
-    $propertyType = $app->request()->post('propertyType');
-
-    // search function of fields
-    $where = new WhereClause('and');
-    if ($numberOfBedroom != "Bedrooms") {
-        if (strpos($numberOfBedroom, "more")) {
-            $where->add('numberOfBedroom>=%i', 4);
-        } else {
-            $where->add('numberOfBedroom=%i', substr($numberOfBedroom, 0, 1));
-        }
-    }
-    if ($propertyType != "Type") {
-        $where->add('propertyType=%s', $propertyType);
-    }
-
-    if ($price != "Price") {
-        if (strpos($price, "less")) {
-            $where->add('price<%s', substr($price, 1, 6));
-        } else if (strpos($price, "above")) {
-            $where->add('price>%s', substr($price, 1, 6));
-        } else {
-            $where->add('price between %s and %s', substr($price, 1, 6), substr($price, 11, 6));
-        }
-    }
-    $houseList = DB::query("SELECT * FROM houses WHERE %l", $where);
-    $HouseListWithImage = array();
-    if ($search) {
-        //$ci = 0;
-        foreach ($houseList as $h) {
-            $search = strtolower($search);
-            $h_lower = array_map('strtolower', $h);
-            $bool = FALSE;
-            foreach ($h_lower as $hl) {
-                if (stripos($hl, $search) !== false) {
-                    $bool = TRUE;
-                }
-            }
-            if ($bool) {
-                $houseId = $h['id'];
-                $path = DB::queryFirstRow("SELECT imagepath FROM imagepaths WHERE houseId=%i", $houseId);
-                $h['imagePath'] = $path['imagepath'];
-                array_push($HouseListWithImage, $h);
-            }
-        }
-    } else {
-        foreach ($houseList as $h) {
-            $houseId = $h['id'];
-            $path = DB::queryFirstRow("SELECT imagepath FROM imagepaths WHERE houseId=%i", $houseId);
-            $h['imagePath'] = $path['imagepath'];
-            array_push($HouseListWithImage, $h);
-        }
-    }
-    $app->render("list_property.html.twig", array(
-        'houseList' => $HouseListWithImage
-    ));
-})->conditions(array('op' => '(/list|/|/index)'
-));
+});
 
 //===================================
 //******* DELETE A PROPERTY *********
 $app->get('/delete/:id', function($id) use ($app) {
     if (!$_SESSION['user']) {
-        $app->render('first_login.html.twig');
+        $app->render('forbidden.html.twig');
         return;
     }
+
     //please fix this part it doesnot show the image and values...
     $house = DB::queryFirstRow("SELECT * FROM houses WHERE id=%i", $id);
     //
@@ -370,165 +241,10 @@ $app->get('/delete/:id', function($id) use ($app) {
 });
 
 $app->post('/delete/:id', function($id) use ($app) {
-    if (!$_SESSION['user']) {
-        $app->render('first_login.html.twig');
-        return;
-    }
     DB::delete('houses', 'id=%i', $id);
     DB::delete('imagePaths', 'houseid=%i', $id);
     $app->render('property_delete_success.html.twig');
 });
-
-
-$app->post('/index', function($op) use ($app) {
-
-    $search = $app->request()->post('search1');
-    $numberOfBedroom = $app->request()->post('numberOfBedroom1');
-    $price = $app->request()->post('price1');
-    $propertyType = $app->request()->post('propertyType1');
-
-    // search function of fields
-    $where = new WhereClause('and');
-    if ($numberOfBedroom != "Bedrooms") {
-        if (strpos($numberOfBedroom, "more")) {
-            $where->add('numberOfBedroom>=%i', 4);
-        } else {
-            $where->add('numberOfBedroom=%i', substr($numberOfBedroom, 0, 1));
-        }
-    }
-    if ($propertyType != "Type") {
-        $where->add('propertyType=%s', $propertyType);
-    }
-
-    if ($price != "Price") {
-        if (strpos($price, "less")) {
-            $where->add('price<%s', substr($price, 1, 6));
-        } else if (strpos($price, "above")) {
-            $where->add('price>%s', substr($price, 1, 6));
-        } else {
-            $where->add('price between %s and %s', substr($price, 1, 6), substr($price, 11, 6));
-        }
-    }
-    $houseList = DB::query("SELECT * FROM houses WHERE %l", $where);
-    $HouseListWithImage = array();
-    if ($search) {
-        foreach ($houseList as $h) {
-            $search = strtolower($search);
-            $h_lower = array_map('strtolower', $h);
-            $bool = FALSE;
-            foreach ($h_lower as $hl) {
-                if (stripos($hl, $search) !== false) {
-                    $bool = TRUE;
-                }
-            }
-            if ($bool) {
-                $houseId = $h['id'];
-                $path = DB::queryFirstRow("SELECT imagepath FROM imagepaths WHERE houseId=%i", $houseId);
-                $h['imagePath'] = $path['imagepath'];
-                array_push($HouseListWithImage, $h);
-            }
-        }
-    } else {
-        foreach ($houseList as $h) {
-            $houseId = $h['id'];
-            $path = DB::queryFirstRow("SELECT imagepath FROM imagepaths WHERE houseId=%i", $houseId);
-            $h['imagePath'] = $path['imagepath'];
-            array_push($HouseListWithImage, $h);
-        }
-    }
-    $app->render("list_property.html.twig", array(
-        'houseList' => $HouseListWithImage
-    ));
-});
-
-$app->post('/list', function($op) use ($app) {
-
-    $search = $app->request()->post('search');
-    $numberOfBedroom = $app->request()->post('numberOfBedroom');
-    $price = $app->request()->post('price');
-    $propertyType = $app->request()->post('propertyType');
-
-    // search function of fields
-    $where = new WhereClause('and');
-    if ($numberOfBedroom != "Bedrooms") {
-        if (strpos($numberOfBedroom, "more")) {
-            $where->add('numberOfBedroom>=%i', 4);
-        } else {
-            $where->add('numberOfBedroom=%i', substr($numberOfBedroom, 0, 1));
-        }
-    }
-    if ($propertyType != "Type") {
-        $where->add('propertyType=%s', $propertyType);
-    }
-
-    if ($price != "Price") {
-        if (strpos($price, "less")) {
-            $where->add('price<%s', substr($price, 1, 6));
-        } else if (strpos($price, "above")) {
-            $where->add('price>%s', substr($price, 1, 6));
-        } else {
-            $where->add('price between %s and %s', substr($price, 1, 6), substr($price, 11, 6));
-        }
-    }
-    $houseList = DB::query("SELECT * FROM houses WHERE %l", $where);
-    $HouseListWithImage = array();
-    if ($search) {
-        //$ci = 0;
-        foreach ($houseList as $h) {
-            $search = strtolower($search);
-            $h_lower = array_map('strtolower', $h);
-            $bool = FALSE;
-            foreach ($h_lower as $hl) {
-                if (stripos($hl, $search) !== false) {
-                    $bool = TRUE;
-                }
-            }
-            if ($bool) {
-                $houseId = $h['id'];
-                $path = DB::queryFirstRow("SELECT imagepath FROM imagepaths WHERE houseId=%i", $houseId);
-                $h['imagePath'] = $path['imagepath'];
-                array_push($HouseListWithImage, $h);
-            }
-        }
-    } else {
-        foreach ($houseList as $h) {
-            $houseId = $h['id'];
-            $path = DB::queryFirstRow("SELECT imagepath FROM imagepaths WHERE houseId=%i", $houseId);
-            $h['imagePath'] = $path['imagepath'];
-            array_push($HouseListWithImage, $h);
-        }
-    }
-    $app->render("list_property.html.twig", array(
-        'houseList' => $HouseListWithImage
-    ));
-});
-
-//===================================
-//******* DELETE A PROPERTY *********
-$app->get('/delete/:id', function($id) use ($app) {
-    if (!$_SESSION['user']) {
-        $app->render('first_login.html.twig');
-        return;
-    }
-    //please fix this part it doesnot show the image and values...
-    $house = DB::queryFirstRow("SELECT * FROM houses WHERE id=%i", $id);
-    //
-    $image = DB::query("SELECT imagePath,imageMimeType FROM imagepaths WHERE id=%i", $id);
-    $app->render("property_delete.html.twig", array('h' => $house,
-        'i' => $image
-    ));
-});
-
-$app->post('/delete/:id', function($id) use ($app) {
-    if (!$_SESSION['user']) {
-        $app->render('first_login.html.twig');
-        return;
-    }
-    DB::delete('houses', 'id=%i', $id);
-    DB::delete('imagePaths', 'houseid=%i', $id);
-    $app->render('property_delete_success.html.twig');
-});
-
 
 
 
@@ -536,11 +252,7 @@ $app->post('/delete/:id', function($id) use ($app) {
 //******* UPDATE UPLOADED HOUSE Or ADD A PROPERTY *****
 
 $app->get('/:op(/:id)', function($op, $id = 0) use ($app) {
-    if (!$_SESSION['user']) {
-        $app->render('first_login.html.twig');
-        return;
-    }
-    //$userId = $_SESSION['user']['id'];
+
     if ($op == 'edit') {
         $properties = DB::queryFirstRow("SELECT * FROM houses WHERE id=%i", $id);
         //not working how to  update images?
@@ -562,12 +274,9 @@ $app->get('/:op(/:id)', function($op, $id = 0) use ($app) {
 
 $app->post('/:op(/:id)', function($op, $id = 0) use ($app) {
 
-    if (!$_SESSION['user']) {
-        $app->render('first_login.html.twig');
-        return;
-    }
 
     $ownerId = $_SESSION['user']['id'];
+
     $postalcode = $app->request()->post('postCode');
     $address = $app->request()->post('address');
     $city = $app->request()->post('city');
@@ -695,22 +404,106 @@ $app->get('/logout', function() use ($app) {
     $app->render('logout.html.twig');
 });
 
+
+
 //========================
-//******* property details *********
-$app->get('/property/:id', function($id) use ($app) {
-    $houseList = DB::queryFirstRow("SELECT * FROM houses WHERE id=%i", $id);
-    $imagePath = DB::query("SELECT imagePath FROM imagepaths WHERE houseid=%i", $id);
-    $owner = DB::queryFirstRow("SELECT * FROM users WHERE id=%i", $houseList['ownerId']);
-    $app->render('propertydetails.html.twig', array('h' => $houseList,
-        'images' => $imagePath, 'o' => $owner)
-    );
-});
+//******* Password Reset *********
+function generateRandomString($length = 10) {
+    $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    $charactersLength = strlen($characters);
+    $randomString = '';
+    for ($i = 0; $i < $length; $i++) {
+        $randomString .= $characters[rand(0, $charactersLength - 1)];
+    }
+    return $randomString;
+}
+
+$app->map('/passreset', function () use ($app, $log) {
+    // Alternative to cron-scheduled cleanup
+    if (rand(1,1000) == 111) {
+        // TODO: do the cleanup 1 in 1000 accessed to /passreset URL
+    }
+    if ($app->request()->isGet()) {
+        $app->render('passreset.html.twig');
+    } else {
+        $email = $app->request()->post('email');
+        $user = DB::queryFirstRow("SELECT * FROM users WHERE email=%s", $email);
+        if ($user) {
+            $app->render('passreset_success.html.twig');
+            $secretToken = generateRandomString(50);
+            // VERSION 1: delete and insert
+            /*
+              DB::delete('passresets', 'userID=%d', $user['ID']);
+              DB::insert('passresets', array(
+              'userID' => $user['ID'],
+              'secretToken' => $secretToken,
+              'expiryDateTime' => date("Y-m-d H:i:s", strtotime("+5 hours"))
+              )); */
+            // VERSION 2: insert-update TODO
+            DB::insertUpdate('passresets', array(
+                'userID' => $user['id'],
+                'secretToken' => $secretToken,
+                'expiryDateTime' => date("Y-m-d H:i:s", strtotime("+5 minutes"))
+            ));
+            // email user
+            $url = 'http://' . $_SERVER['SERVER_NAME'] . '/passreset/' . $secretToken;
+            $html = $app->view()->render('email_passreset.html.twig', array(
+                'name' => $user['name'],
+                'url' => $url
+            ));
+            $headers = "MIME-Version: 1.0\r\n";
+            $headers.= "Content-Type: text/html; charset=UTF-8\r\n";
+            $headers.= "From: Noreply <noreply@ipd8.info>\r\n";
+            $headers.= "To: " . htmlentities($user['name']) . " <" . $email . ">\r\n";
+
+            mail($email, "Password reset from SlimShop", $html, $headers);
+        } else {
+            $app->render('passreset.html.twig', array('error' => TRUE));
+        }
+    }
+})->via('GET', 'POST');
 
 
-$app->get('/contactus', function() use ($app) {
+$app->map('/passreset/:secretToken', function($secretToken) use ($app) {
+    $row = DB::queryFirstRow("SELECT * FROM passresets WHERE secretToken=%s", $secretToken);
+    if (!$row) {
+        $app->render('passreset_notfound_expired.html.twig');
+        return;
+    }
+    if (strtotime($row['expiryDateTime']) < time()) {
+        $app->render('passreset_notfound_expired.html.twig');
+        return;
+    }
+    //
+    if ($app->request()->isGet()) {
+        $app->render('passreset_form.html.twig');
+    } else {
+        $pass1 = $app->request()->post('pass1');
+        $pass2 = $app->request()->post('pass2');
+        // TODO: verify password quality and that pass1 matches pass2
+        $errorList = array();
+        $msg = verifyPassword($pass1);
+        if ($msg !== TRUE) {
+            array_push($errorList, $msg);
+        } else if ($pass1 != $pass2) {
+            array_push($errorList, "Passwords don't match");
+        }
+        //
+        if ($errorList) {
+            $app->render('passreset_form.html.twig', array(
+                'errorList' => $errorList
+            ));
+        } else {
+            // success - reset the password
+            DB::update('users', array(
+                'password' => password_hash($pass1, CRYPT_BLOWFISH)
+                    ), "ID=%d", $row['userID']);
+            DB::delete('passresets','secretToken=%s', $secretToken);
+            $app->render('passreset_form_success.html.twig');
+        }
+    }
+})->via('GET', 'POST');
 
-    $app->render("contactus.html.twig");
-});
 
 
 
