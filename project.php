@@ -7,7 +7,7 @@ require_once 'vendor/autoload.php';
 require_once 'local.php';
 
 
-/* DB::$encoding = 'utf8';
+/* DB::$encoding = 'utf8'; =============
   DB::$user = 'cp4776_pro-em ';
   DB::$dbName = 'cp4776_propertymanagement';
   DB::$password = "rWVaKK@0pETJ";
@@ -84,10 +84,6 @@ $app->get('/', function() use ($app) {
 $app->get('/index', function() use ($app) {
     $app->render('index.html.twig');
 });
-
-
-
-
 
 
 
