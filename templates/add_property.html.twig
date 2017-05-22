@@ -1,5 +1,5 @@
 
-{% extends "master.html.twig" %}
+{% extends "master1.html.twig" %}
 
 {% block title %}Add Property{% endblock %}
 
@@ -69,7 +69,7 @@
                         <div class="form-group">
                             <label for="Price" class="col-md-3 control-label">Asking Price</label>
                             <div class="col-md-9">
-                                <input type="text" class="form-control" name="price" value="{{v.price}}" placeholder="Asking Price">
+                                <input type="text" class="form-control" name="price" value="{{v.Price}}" placeholder="Asking Price">
                             </div>
                         </div>
                         <div class="form-group">
@@ -92,10 +92,14 @@
                         </div>
                         <div class="form-group">
                             <label for="image" class="col-md-3 control-label">image files</label>
-                            <div class="col-md-9">
-                                <input type="file" class="form-control" name="image">
+                            <div class="col-md-9" enctype="multipart/form-data">
+                                <!--add multiple images not working-->
+                              <!--  <input type="file" class="form-control" name="images[]" id="file" >
+                                <input type="file" class="form-control" name="images[]" id="file" >
+                                <input type="file" class="form-control" name="images[]" id="file" >-->
+                                <input type="file" class="form-control" name="image" id="file"  >
                                 {% if v.imagePath %}
-                                    <img width="250" src="/{{v.imagePath}}">
+                                    <img width="200" src="/{{v.imagePath}}">
                                 {% endif %}
                             </div>
                         </div>
@@ -122,29 +126,6 @@
         </div> 
     </div>
 
-
-    {# 
-        <form method="post" enctype="multipart/form-data">
-            Postal Code <input type="text" name="postalCode" value="{{v.postCode}}"><br>
-            Address <input type="text" name="address" value="{{v.address}}"><br>
-    
-            Image: <input type="file" name="image"><br>
-            {% if v.imagePath %}
-                <img width="50" src="/{{v.imagePath}}">
-            {% endif %}
-            Phone Number <input type="number" name="phonenumber" value="{{v.phoneNumber}}" ><br>
-            Number of Bedroom <input type="number" name="numberofbedroom" value="{{v.numberOfBedroom}}"><br>
-            Price <input type="number" name="price" value="{{v.price}}" ><br>
-            Year of build <input type="number" name="Year" value="{{v.yearOfBuild}}" ><br>
-            // status<input type="text" name="status" value="{{v.status}}" ><br>
-    
-    
-            <input type="submit" value="{{operation}} property">
-            <input type="submit" value="Edit">
-            <input type="button" value="Delete">
-    
-        </form>
-    #}
 
 
 {% endblock content %}

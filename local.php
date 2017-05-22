@@ -1,8 +1,8 @@
 <?php
 
 DB::$user = 'root';
-DB::$password = "";
-DB::$dbName = 'propertymanagement';
+DB::$password = "";//LDLI27Jtdmr26v0N
+DB::$dbName ='properysalesys'; //'propertymanagement';
 DB::$port = 3307;
 
 

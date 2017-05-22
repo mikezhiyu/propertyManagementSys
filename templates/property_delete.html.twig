@@ -1,19 +1,18 @@
-{# empty Twig template #}
-{% extends "master.html.twig" %}
+{% extends "master1.html.twig" %}
 
 {% block title %}Delete House{% endblock %}
 
 {% block content %}
-
-     <p> Are you sure you want to delete this House?</p>
-    <form style="display: inline-block" action="/list">
-        <input type="submit" value="Cancel"></form>
-    <form style="display: inline-block" method="post">
-        <input type="hidden" name="delete" value="confirmed">
-        <input type="submit" value="Yes, delete"></form>
-    <p>{{h.city}} , {{h.yearOfBuild}} priced at {{h.Price}}
-        <img src="/{{h.imagePath}}" width="40"></p>
-    
+    <div style="text-align: center; ">
+        <p style="font-size: 20px;margin-top: 50px;"> Are you sure you want to delete this House?</p>
+        <form style="display: inline-block" action="/list">
+            <input  type="submit" class="btn btn-danger" value="Cancel"></form>
+        <form style="display: inline-block" method="post">
+            <input type="hidden" name="delete" value="confirmed">
+            <input type="submit" class="btn btn-warning" value="Delete"></form>
+        <p style="margin-top: 50px;font-size: 20px;">{{h.city}} , {{h.yearOfBuild}} priced at {{h.Price}}
+            <img src="/{{i.imagePath}}" width="200"></p>
+    </div> 
 {% endblock %}
 
 

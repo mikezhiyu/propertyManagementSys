@@ -3,12 +3,8 @@
 session_cache_limiter(false);
 session_start();
 
-
 require_once 'vendor/autoload.php';
 require_once 'local.php';
-
-
-
 
 /*
   DB::$encoding = 'utf8';
@@ -66,48 +62,57 @@ if (!isset($_SESSION['user'])) {
 $twig = $app->view()->getEnvironment();
 $twig->addGlobal('user', $_SESSION['user']);
 
+//============================
+//******* INDEX PAGE *********
 $app->get('/', function() use ($app) {
     if (!$_SESSION['user']) {
         $app->render('index.html.twig');
         return;
     }
-    // $userId = $_SESSION['user']['id'];
-    // $houseList = DB::query("SELECT * FROM houses WHERE ownerId=%i", $userId);
-    //print_r($todoList);
-    // $app->render('index_todolist.html.twig', array('houseList' => $houseList));
-
-    $app->render('index.html.twig');
+    $userId = $_SESSION['user']['id'];
+    $houseList = DB::query("SELECT * FROM houses");
+    $HouseListWithImage = array();
+    foreach ($houseList as $h) {
+        $houseId = $h['id'];
+        $path = DB::queryFirstRow("SELECT imagepath FROM imagepaths WHERE houseId=%i", $houseId);
+        $h['imagePath'] = $path['imagepath'];
+        array_push($HouseListWithImage, $h);
+    }
+    $app->render("list_property.html.twig", array(
+        'houseList' => $HouseListWithImage
+    ));
 });
 
 $app->get('/index', function() use ($app) {
-
-
     $app->render('index.html.twig');
 });
+$app->get('/contactus', function() use ($app) {
 
-// STATE 1: First show
+    $app->render("contactus.html.twig");
+});
 
+
+//============================
+//******* REGISTER *********
 
 $app->get('/register', function() use ($app) {
     $app->render('register.html.twig');
 });
-
-
 // Receiving a submission
 $app->post('/register', function() use ($app) {
-    // extract variables
+// extract variables
     $email = $app->request()->post('email');
     $pass1 = $app->request()->post('password1');
     $pass2 = $app->request()->post('password2');
     $firstname = $app->request()->post('firstname');
     $lastname = $app->request()->post('lastname');
-    // list of values to retain after a failed submission
+// list of values to retain after a failed submission
     $valueList = array(
         'email' => $email,
         'firstname' => $firstname,
         'lastname' => $lastname
     );
-    // check for errors and collect error messages
+// check for errors and collect error messages
     $errorList = array();
     if (filter_var($email, FILTER_VALIDATE_EMAIL) === FALSE) {
         array_push($errorList, "Email is invalid");
@@ -135,7 +140,7 @@ $app->post('/register', function() use ($app) {
                     . "one uppercase letter, and a digit");
         }
     }
-    //
+//
     if ($errorList) {
         $app->render('register.html.twig', array(
             'errorList' => $errorList,
@@ -150,16 +155,16 @@ $app->post('/register', function() use ($app) {
         $app->render('register_success.html.twig');
     }
 });
-
 // AJAX: Is user with this email already registered?
 $app->get('/ajax/emailused/:email', function($email) {
     $user = DB::queryFirstRow("SELECT * FROM users WHERE email=%s", $email);
-    //echo json_encode($user, JSON_PRETTY_PRINT);
+//echo json_encode($user, JSON_PRETTY_PRINT);
     echo json_encode($user != null);
 });
 
 
-//log in
+//=======================
+//******* Login *********
 
 $app->get('/login', function() use ($app) {
     $app->render('login.html.twig');
@@ -168,7 +173,7 @@ $app->get('/login', function() use ($app) {
 $app->post('/login', function() use ($app) {
     $email = $app->request()->post('email');
     $pass = $app->request()->post('password');
-    // verification    
+// verification    
     $error = false;
     $user = DB::queryFirstRow("SELECT * FROM users WHERE email=%s", $email);
     if (!$user) {
@@ -178,8 +183,6 @@ $app->post('/login', function() use ($app) {
             $error = true;
         }
     }
-    //print_r($user);
-    // decide what to render
     if ($error) {
         $app->render('login.html.twig', array("error" => true));
     } else {
@@ -189,39 +192,93 @@ $app->post('/login', function() use ($app) {
     }
 });
 
-$app->get('/logout', function() use ($app) {
-    unset($_SESSION['user']);
-    $app->render('logout.html.twig');
+
+
+
+
+
+//=================================
+//******* PROPERTY DETAILS *********
+$app->get('/propertydetail/:id', function($id) use ($app) {
+    $houseList = DB::queryFirstRow("SELECT * FROM houses WHERE id=%i", $id);
+    $imagePath = DB::query("SELECT imagePath FROM imagepaths WHERE houseid=%i", $id);
+    $owner = DB::queryFirstRow("SELECT * FROM users WHERE id=%i", $houseList['ownerId']);
+    $app->render('propertydetails.html.twig', array('h' => $houseList,
+        'images' => $imagePath, 'o' => $owner)
+    );
+});
+
+//=============================
+//******* HOUSE LIST *********
+
+$app->get('/list', function() use ($app) {
+    $houseList = DB::query("SELECT * FROM houses");
+    $HouseListWithImage = array();
+    foreach ($houseList as $h) {
+        $houseId = $h['id'];
+        $path = DB::queryFirstRow("SELECT imagepath FROM imagepaths WHERE houseId=%i", $houseId);
+        $h['imagePath'] = $path['imagepath'];
+        array_push($HouseListWithImage, $h);
+    }
+    $app->render("list_property.html.twig", array(
+        'houseList' => $HouseListWithImage
+    ));
+});
+
+//===================================
+//******* DELETE A PROPERTY *********
+$app->get('/delete/:id', function($id) use ($app) {
+    if (!$_SESSION['user']) {
+        $app->render('forbidden.html.twig');
+        return;
+    }
+
+    //please fix this part it doesnot show the image and values...
+    $house = DB::queryFirstRow("SELECT * FROM houses WHERE id=%i", $id);
+    //
+    $image = DB::query("SELECT imagePath,imageMimeType FROM imagepaths WHERE id=%i", $id);
+    $app->render("property_delete.html.twig", array('h' => $house,
+        'i' => $image
+    ));
+});
+
+$app->post('/delete/:id', function($id) use ($app) {
+    DB::delete('houses', 'id=%i', $id);
+    DB::delete('imagePaths', 'houseid=%i', $id);
+    $app->render('property_delete_success.html.twig');
 });
 
 
 
-//////test
-$app->get('/test', function() {
-    print_r($_SESSION);
-});
+//=====================================================
+//******* UPDATE UPLOADED HOUSE Or ADD A PROPERTY *****
+
+$app->get('/:op(/:id)', function($op, $id = 0) use ($app) {
+
+    if ($op == 'edit') {
+        $properties = DB::queryFirstRow("SELECT * FROM houses WHERE id=%i", $id);
+        //not working how to  update images?
+        $images = DB::queryFirstRow("SELECT imagePath,imageMimeType FROM imagePaths WHERE houseId=%i", $id);
+        if (!$properties ) {
+            echo 'Property not found';
+            return;
+        }
+        $app->render("add_property.html.twig", array(
+            'v' => $properties, 'operation' => 'Update'
+        ));
+    } else {
+        $app->render("add_property.html.twig", array('operation' => 'Add'
+        ));
+    }
+})->conditions(array(
+    'op' => '(add|edit)',
+    'id' => '[0-9]+'));
+
+$app->post('/:op(/:id)', function($op, $id = 0) use ($app) {
 
 
+    $ownerId = $_SESSION['user']['id'];
 
-$app->get('/property', function() use ($app) {
-    $app->render('propertydetails.html.twig');
-});
-
-
-
-
-
-
-
-
-$app->get('/addproperty', function() use ($app) {
-
-    $app->render("add_property.html.twig");
-    //  print_r($valueList);
-});
-
-
-$app->post('/addproperty', function() use ($app) {
     $postalcode = $app->request()->post('postCode');
     $address = $app->request()->post('address');
     $city = $app->request()->post('city');
@@ -231,22 +288,17 @@ $app->post('/addproperty', function() use ($app) {
     $year = $app->request()->post('year');
     $propertyType = $app->request()->post('propertyType');
     $area = $app->request()->post('area');
-
-
-    $ownerId = $_SESSION['user']['id'];
+    $status = "sold";
     $valueList = array('ownerId' => $ownerId,
         'postCode' => $postalcode, 'address' => $address,
         'city' => $city, 'phoneNumber' => $phoneNumber,
         'numberOfBedroom' => $numberOfBedroom, 'price' => $price, 'yearOfBuild' => $year,
-        'propertyType' => $propertyType, 'area' => $area, 'status' => "sold"
+        'propertyType' => $propertyType, 'area' => $area, 'status' => $status
     );
-
-    $image = $_FILES['image'];
-
-
-    //  $image = isset($_FILES['image']) ? $_FILES['image'] : array();
-    //
-  $errorList = array();
+    
+    // print_r($image);
+    //    
+    $errorList = array();
     if (strlen($address) < 2 || strlen($address) > 300) {
         array_push($errorList, "Address must be 2-300 characters long");
     }
@@ -265,7 +317,7 @@ $app->post('/addproperty', function() use ($app) {
     if (empty($price) || $price < 0 || $price > 9999999) {
         array_push($errorList, "Price must be between 0 and 9999999");
     }
-    //if (empty($numberofbedroom) ||  || $numberofbedroom > 100) {
+//if (empty($numberofbedroom) ||  || $numberofbedroom > 100) {
     if (empty($numberOfBedroom) || $numberOfBedroom > 100 || $numberOfBedroom < 1) {
         array_push($errorList, "bedrooms must be between 1 and 100");
     }
@@ -276,23 +328,25 @@ $app->post('/addproperty', function() use ($app) {
         array_push($errorList, "area must be between 1 and 1000000");
     }
 
+    $image = $_FILES['image'];
+
     if ($image['error'] != 0) {
-        array_push($errorList, "Image is required to create a product");
+        array_push($errorList, "Image is required to create a house");
     } else {
         $imageInfo = getimagesize($image["tmp_name"]);
         if (!$imageInfo) {
             array_push($errorList, "File does not look like an valid image");
         } else {
-            // FIXME: opened a security hole here! .. must be forbidden
+// FIXME: opened a security hole here! .. must be forbidden
             if (strstr($image["name"], "..")) {
                 array_push($errorList, "File name invalid");
             }
-            // FIXME: only allow select extensions .jpg .gif .png, never .php
+// FIXME: only allow select extensions .jpg .gif .png, never .php
             $ext = strtolower(pathinfo($image['name'], PATHINFO_EXTENSION));
             if (!in_array($ext, array('jpg', 'jpeg', 'gif', 'png'))) {
                 array_push($errorList, "File name invalid");
             }
-            // FIXME: do not allow file to override an previous upload
+// FIXME: do not allow file to override an previous upload
             if (file_exists('uploads/' . $image['name'])) {
                 array_push($errorList, "File name already exists. Will not override.");
             }
@@ -302,52 +356,55 @@ $app->post('/addproperty', function() use ($app) {
     if ($errorList) {
         $app->render("add_property.html.twig", array(
             'v' => $valueList,
-            "errorList" => $errorList));
+            "errorList" => $errorList,
+            'operation' => ($op == 'edit' ? 'ADD' : 'Update')
+        ));
     } else {
+
         $imagePath = "uploads/" . $image['name'];
         move_uploaded_file($image["tmp_name"], $imagePath);
+        if ($op == 'edit') {
+            // unlink('') OLD file - requires select            
+            $oldImagePath = DB::queryFirstField(
+                            'SELECT imagePath FROM imagepaths WHERE id=%i', $id);
+            if (($oldImagePath) && file_exists($oldImagePath)) {
+                unlink($oldImagePath);
+            }
+            DB::update('houses', $valueList);
+            $houseId = DB::insertId();
+            $mimeType = mime_content_type($image["tmp_name"]);
+            DB::update('imagePaths', array(
+                'houseId' => $houseId,
+                'imagePath' => $imagePath,
+                'imageMimeType' => $mimeType), "id=%i", $id);
+        } else {
 
-        //   $imageBinaryData = file_get_contents($image['tmp_name']);
-        $mimeType = mime_content_type($image['tmp_name']);
-
-        DB::insert('houses', $valueList);
-
-
-
-
-        //is it correct? what ho to  get the house id?
-        $houseId = $_SESSION['user']['id'];
-        DB::insert('imagePaths', array(
-            'houseId' => $houseId,
-            'imageData' => $imageBinaryData,
-            'imageMimeType' => $mimeType
-        ));
+            DB::insert('houses', $valueList);
+            $houseId = DB::insertId();
+            $mimeType = mime_content_type($image["tmp_name"]);
+            $imagePath = "uploads/" . $image['name'];
+            move_uploaded_file($image["tmp_name"], $imagePath);
+            DB::insert('imagePaths', array(
+                'houseId' => $houseId,
+                'imagePath' => $imagePath,
+                'imageMimeType' => $mimeType
+            ));
+        }
         $app->render("property_add_success.html.twig", array(
-            "imagePath" => $imagePath));
+            "imagePath" => $imagePath
+        ));
     }
+})->conditions(array(
+    'op' => '(add|edit)',
+    'id' => '[0-9]+'));
+
+
+//========================
+//******* Logout *********
+$app->get('/logout', function() use ($app) {
+    unset($_SESSION['user']);
+    $app->render('logout.html.twig');
 });
 
-
-
-
-$app->get('/list', function() use ($app) {
-    $houseList = DB::query("SELECT * FROM houses");
-    $app->render("list_property.html.twig", array(
-        'houseList' => $houseList
-    ));
-});
-
-
-$app->get('/delete/:id', function($id) use ($app) {
-    $product = DB::queryFirstRow('SELECT * FROM houses WHERE id=%i', $id);
-    $app->render('property_delete.html.twig', array(
-        'p' => $product
-    ));
-});
-
-$app->post('/delete/:id', function($id) use ($app) {
-    DB::delete('houses', 'id=%i', $id);
-    $app->render('property_delete_success.html.twig');
-});
 
 $app->run();

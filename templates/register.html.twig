@@ -12,11 +12,13 @@
 {% block content %}
 
     {% if errorList %}
-        <ul class="errorList">
-            {% for error in errorList %}
-                <li>{{ error }}</li>
-                {% endfor %}
-        </ul>
+        <div style="margin-left: 370px;">
+            <ul class="errorList" style="font-weight: bolder;color: red;">
+                {% for error in errorList %}
+                    <li >{{ error }}</li>
+                    {% endfor %}
+            </ul>
+        </div>
     {% endif %}
 
 

@@ -44,7 +44,7 @@
                     </button>
                 </div>
                 <!-- Nav Starts -->
-                <div class="navbar-collapse  collapse">
+                <div class="navbar-collapse  collapse" >
                     <ul class="nav navbar-nav navbar-right">
                         <li class="active"><a href="/index">Home</a></li>
                         <li><a href="">About</a></li>
@@ -54,7 +54,7 @@
                         <li><a href="/contactus">Contact</a></li>
                         <div class="navbar-collapse  collapse" style="float:left">
                             {% if user %}
-                                Welcome {{ user.email }}, you may  <li><a href="/logout">Logout</a></li>
+                                <span style="color: yellow">  Welcome {{ user.email }}, you may</span><a href="/logout"><br>Logout</a>
                                 {% endif %}
                         </div>
                     </ul>
@@ -69,13 +69,13 @@
 
         <!-- Header Starts -->
         <div class="header">
-            <a href="/index"><img  src="images/logo.png" height="100" width="300" alt="Realestate"></a>
+            <a href="/index"><img  src="images/logo2.png" height="100" width="300" alt="Realestate"></a>
 
             <ul class="pull-right">
-                <li><a href="/property">Buy</a></li>
-                <li><a href="/property">Sale</a></li>         
-                <li><a href="/addproperty">Add a Property</a></li>
-                  <li><a href="/list">All Properties</a></li>
+                <!--please fix the delete href!!!-->
+                      
+                <li><a href="/add">Add a Property</a></li>
+                <li><a href="/list">All Properties</a></li>
             </ul>
         </div>
         <!-- #Header Starts -->
@@ -92,10 +92,10 @@
             <div class="col-lg-3 col-sm-3">
                 <h4>Information</h4>
                 <ul class="row">
-                    <li class="col-lg-12 col-sm-12 col-xs-3"><a href="about.php">About</a></li>
-                    <li class="col-lg-12 col-sm-12 col-xs-3"><a href="agents.php">Agents</a></li>         
-                    <li class="col-lg-12 col-sm-12 col-xs-3"><a href="blog.php">Blog</a></li>
-                    <li class="col-lg-12 col-sm-12 col-xs-3"><a href="contact.php">Contact</a></li>
+                    <li class="col-lg-12 col-sm-12 col-xs-3"><a href="">About</a></li>
+                    <li class="col-lg-12 col-sm-12 col-xs-3"><a href="">Agents</a></li>         
+                    <li class="col-lg-12 col-sm-12 col-xs-3"><a href="">Blog</a></li>
+                    <li class="col-lg-12 col-sm-12 col-xs-3"><a href="/contactus">Contact</a></li>
                 </ul>
             </div>
 
