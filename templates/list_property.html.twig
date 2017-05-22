@@ -12,52 +12,48 @@
         </div>
     </div>
     <!-- banner -->
+
+
     <div class="container">
         <div class="properties-listing spacer">
+
             <div class="row">
                 <div class="col-lg-3 col-sm-4 ">
+
                     <div class="search-form"><h4><span class="glyphicon glyphicon-search"></span> Search for</h4>
-                        <form id="signupform" class="form-horizontal" role="form" method="post" enctype="multipart/form-data">
-
-                            <input type="text" class="form-control" name="search" placeholder="Search of Properties">
-                            <div class="row">
-                                <div class="col-lg-9">
-                                    <select class="form-control" name="numberOfBedroom">
-                                        <option>Bedrooms</option>
-                                        <option>1</option>
-                                        <option>2</option>
-                                        <option>3</option>
-                                        <option>4 or more</option>
-                                    </select>
-                                </div>
-                                <div class="col-lg-9">
-                                    <select class="form-control" name="price">
-                                        <option>Price</option>
-                                        <option>$150000 or less</option>
-                                        <option>$150000 - $250000</option>
-                                        <option>$250000 - $350000</option>
-                                        <option>$350000 - $500000</option>
-                                        <option>$500000 or above</option>
-                                        <option>any</option>
-                                    </select>
-                                </div>
+                        <input type="text" class="form-control" placeholder="Search of Properties">
+                        <div class="row">
+                            <div class="col-lg-5">
+                                <select class="form-control">
+                                    <option>Buy</option>
+                                    <option>Rent</option>
+                                    <option>Sale</option>
+                                </select>
                             </div>
-
-                            <div class="row">
-                                <div class="col-lg-9">
-                                    <select class="form-control" name="propertyType">
-                                        <option>Type</option>
-                                        <option>Condo</option>
-                                        <option>Semi-detached</option>
-                                        <option>Detached</option>
-                                          <option>Townhouse</option>
-                                        <option>Others</option>
-                                    </select>
-                                </div>
+                            <div class="col-lg-7">
+                                <select class="form-control">
+                                    <option>Price</option>
+                                    <option>$150,000 - $200,000</option>
+                                    <option>$200,000 - $250,000</option>
+                                    <option>$250,000 - $300,000</option>
+                                    <option>$300,000 - above</option>
+                                </select>
                             </div>
-                            <input type="submit" href="/list" class="btn btn-primary">Find Now</input>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <select class="form-control">
+                                    <option>Property Type</option>
+                                    <option>Apartment</option>
+                                    <option>Building</option>
+                                    <option>Office Space</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary">Find Now</button>
                     </div>
-                    </form>
+
                     <div class="hot-properties hidden-xs">
                         <h4>Hot Properties</h4>
                         <div class="row">
@@ -102,21 +98,21 @@
                     </div>
                     <div class="row">
                         <table class="table"   class="table-responsive" class="table-bordered">
-                            <tr style="font-size: 16px;background-color: lightgrey;"><th>Pictures</th><th>City</th><th>Bedroom</th><th>Price</th><th>Address</th><th>Year</th><th></th></tr>
-
+                            <tr style="font-size: 16px;background-color: lightgrey;"><th>Pictures</th><th>City</th><th>Bedroom</th><th>Price</th><th>Address</th><th>Year Of Build</th><th></th></tr>
+                 
                             {% for h in houseList %}
                                 <tr style="font-size:17px;margin-top: 40px ">
-                                    <td><a href="/property/{{h.id}}"><img height="200" width="200" href="/property" src="/{{h.imagePath}}"></a></td>
-                                    <td style="align-content: center">{{h.city}} </td>
+                                    <td><a href="/propertydetail/{{h.id}}"><img height="200" width="200" href="/propertydetail" src="/{{h.imagePath}}"></a></td>
+                                    <td >{{h.city}} </td>
                                     <td>{{h.numberOfBedroom}}   </td>
                                     <td> ${{h.Price}}   </td>
                                     <td>{{h.address}}    </td>
-                                    <td>{{h.yearOfBuild}}</td>
-                                    <td><a href="/edit/{{h.id}}" value="">Edit<br> </a>
+                                    <td>{{h.yearOfBuild}}     </td>
+                                    <td><a href="/edit/{{h.id}}" value="">Edit </a>
                                         <a href="/delete/{{h.id}}" value="" >Delete</a>
                                     </td>   
                                 </tr>
-
+            
                             {% endfor %}
                         </table>
                     </div>
