@@ -6,14 +6,12 @@ session_start();
 require_once 'vendor/autoload.php';
 require_once 'local.php';
 
-/*
-  DB::$encoding = 'utf8';
+
+/* DB::$encoding = 'utf8';
   DB::$user = 'cp4776_pro-em ';
   DB::$dbName = 'cp4776_propertymanagement';
   DB::$password = "rWVaKK@0pETJ";
-  DB::$port = 3306;
-
- */
+  DB::$port = 3306; */
 
 use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
@@ -259,7 +257,7 @@ $app->get('/:op(/:id)', function($op, $id = 0) use ($app) {
         $properties = DB::queryFirstRow("SELECT * FROM houses WHERE id=%i", $id);
         //not working how to  update images?
         $images = DB::queryFirstRow("SELECT imagePath,imageMimeType FROM imagePaths WHERE houseId=%i", $id);
-        if (!$properties ) {
+        if (!$properties) {
             echo 'Property not found';
             return;
         }
@@ -295,7 +293,7 @@ $app->post('/:op(/:id)', function($op, $id = 0) use ($app) {
         'numberOfBedroom' => $numberOfBedroom, 'price' => $price, 'yearOfBuild' => $year,
         'propertyType' => $propertyType, 'area' => $area, 'status' => $status
     );
-    
+
     // print_r($image);
     //    
     $errorList = array();
