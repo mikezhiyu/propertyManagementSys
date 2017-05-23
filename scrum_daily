@@ -126,8 +126,9 @@ What I Did?
 
 What I will do?
 1) impelement face book log in 
+2) update / add/ delete
 where I need help?
-1)face book log ing
+1)face book login
 
 Mike: 
 What I Did?
@@ -139,6 +140,39 @@ What I will do?
 1) implement search
 2) Upload images for each house for sale
 3) list all property for sale 
+
+where I need help?
+1) I have problem with connect to the database in server ipd9.info
+
+
+
+
+19 May, 2017 
+
+Elmira: 
+
+What I Did?
+
+1) implemented update and edit (except multiple images) 
+2) list all properties
+
+What I will do?
+1) Implement face book login  and password reset
+2) implement debug Codes on login an register
+
+where I need help?
+1)face book login/ password reset
+
+Mike: 
+What I Did?
+1) finished search
+2) try to implement update multiple images
+ 
+
+What I will do?
+1) multiple images (update)
+2) 
+
 
 where I need help?
 1) I have problem with connect to the database in server ipd9.info
