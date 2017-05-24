@@ -6,15 +6,16 @@ session_cache_limiter(false);
 session_start();
 
 require_once 'vendor/autoload.php';
-//require_once 'local.php';
+require_once 'local.php';
+
 //require_once 'facebook.php';
 
 
-DB::$encoding = 'utf8';
-DB::$user = 'cp4776_pro-em';
-DB::$dbName = 'cp4776_propertymanagement';
-DB::$password = "rWVaKK@0pETJ";
-DB::$port = 3306;
+/* DB::$encoding = 'utf8';
+  DB::$user = 'cp4776_pro-em';
+  DB::$dbName = 'cp4776_propertymanagement';
+  DB::$password = "rWVaKK@0pETJ";
+  DB::$port = 3306; */
 
 use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
@@ -66,22 +67,8 @@ $twig->addGlobal('user', $_SESSION['user']);
 //============================
 //******* INDEX PAGE *********
 $app->get('/', function() use ($app) {
-    if (!$_SESSION['user']) {
-        $app->render('index.html.twig');
-        return;
-    }
-    $userId = $_SESSION['user']['id'];
-    $houseList = DB::query("SELECT * FROM houses");
-    $HouseListWithImage = array();
-    foreach ($houseList as $h) {
-        $houseId = $h['id'];
-        $path = DB::queryFirstRow("SELECT imagepath FROM imagepaths WHERE houseId=%i", $houseId);
-        $h['imagePath'] = $path['imagepath'];
-        array_push($HouseListWithImage, $h);
-    }
-    $app->render("list_property.html.twig", array(
-        'houseList' => $HouseListWithImage
-    ));
+
+    $app->render("index.html.twig");
 });
 
 $app->get('/index', function() use ($app) {
@@ -153,7 +140,7 @@ $app->post(':op', function($op) use ($app) {
 //============================
 //******* REGISTER *********
 
-$app->get('/register', function() use ($app) {
+$app->get('/register', function() use ($app,$log) {
     $app->render('register.html.twig');
 });
 // Receiving a submission
@@ -210,6 +197,7 @@ $app->post('/register', function() use ($app) {
             'password' => $pass1,
             'name' => $lastname
         ));
+          $log->debug(sprintf("User %s created", $id));
         $app->render('register_success.html.twig');
     }
 });
@@ -224,7 +212,7 @@ $app->get('/ajax/emailused/:email', function($email) {
 //=======================
 //******* Login *********
 
-$app->get('/login', function() use ($app) {
+$app->get('/login', function() use ($app, $log) {
     $app->render('login.html.twig');
 });
 
@@ -235,28 +223,23 @@ $app->post('/login', function() use ($app) {
     $error = false;
     $user = DB::queryFirstRow("SELECT * FROM users WHERE email=%s", $email);
     if (!$user) {
+        $log->debug(sprintf("User failed for email %s from IP %s", $email, $_SERVER['REMOTE_ADDR']));
         $error = true;
     } else {
         if ($user['password'] != $pass) {
+            $log->debug(sprintf("User failed for email %s from IP %s", $email, $_SERVER['REMOTE_ADDR']));
             $error = true;
         }
     }
     if ($error) {
+        $log->debug(sprintf("User failed for email %s from IP %s", $email, $_SERVER['REMOTE_ADDR']));
         $app->render('login.html.twig', array("error" => true));
     } else {
         unset($user['password']);
         $_SESSION['user'] = $user;
-        $houseList = DB::query("SELECT * FROM houses");
-        $HouseListWithImage = array();
-        foreach ($houseList as $h) {
-            $houseId = $h['id'];
-            $path = DB::queryFirstRow("SELECT imagepath FROM imagepaths WHERE houseId=%i", $houseId);
-            $h['imagePath'] = $path['imagepath'];
-            array_push($HouseListWithImage, $h);
-        }
-        $app->render("list_property.html.twig", array(
-            'houseList' => $HouseListWithImage
-        ));
+
+        $log->debug(sprintf("User failed for email %s from IP %s", $user['id'], $_SERVER['REMOTE_ADDR']));
+        $app->render('login_success.html.twig');
     }
 });
 
@@ -534,7 +517,7 @@ $app->post('/:op(/:id)', function($op, $id = 0) use ($app) {
 
 //========================
 //******* Logout *********
-$app->get('/logout', function() use ($app) {
+$app->get('/logout', function() use ($app, $log) {
     unset($_SESSION['user']);
     $app->render('logout.html.twig');
 });
@@ -582,19 +565,19 @@ $app->map('/passreset', function () use ($app, $log) {
             $app->render('passreset_success.html.twig');
             $secretToken = generateRandomString(50);
             // VERSION 1: delete and insert
-            
-              DB::delete('passresets', 'userID=%d', $user['id']);
-              DB::insert('passresets', array(
-              'userID' => $user['id'],
-              'secretToken' => $secretToken,
-              'expiryDateTime' => date("Y-m-d H:i:s", strtotime("+5 hours"))
-              )); 
-            // VERSION 2: insert-update TODO
-           /* DB::insertUpdate('passresets', array(
+
+            DB::delete('passresets', 'userID=%d', $user['id']);
+            DB::insert('passresets', array(
                 'userID' => $user['id'],
                 'secretToken' => $secretToken,
-                'expiryDateTime' => date("Y-m-d H:i:s", strtotime("+5 minutes"))
-            ));*/
+                'expiryDateTime' => date("Y-m-d H:i:s", strtotime("+5 hours"))
+            ));
+            // VERSION 2: insert-update TODO
+            /* DB::insertUpdate('passresets', array(
+              'userID' => $user['id'],
+              'secretToken' => $secretToken,
+              'expiryDateTime' => date("Y-m-d H:i:s", strtotime("+5 minutes"))
+              )); */
             // email user
             $url = 'http://' . $_SERVER['SERVER_NAME'] . '/passreset/' . $secretToken;
             $html = $app->view()->render('email_passreset.html.twig', array(

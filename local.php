@@ -1,12 +1,12 @@
 <?php
 
-DB::$user = 'root';
-DB::$password = "";
-DB::$dbName = 'properysalesys';
-DB::$port = 3307;
+/* DB::$user = 'root';
+  DB::$password = "";
+  DB::$dbName = 'properysalesys';
+  DB::$port = 3307; */
 
 
-/*if ($_SERVER['SERVER_NAME'] == 'localhost') {
+if ($_SERVER['SERVER_NAME'] == 'localhost') {
     DB::$dbName = 'properysalesys';
     DB::$user = '';
     DB::$password = '';
@@ -18,4 +18,4 @@ DB::$port = 3307;
     DB::$dbName = 'cp4776_propertymanagement';
     DB::$password = "rWVaKK@0pETJ";
     DB::$port = 3306;
-}*/
+}
