@@ -8,7 +8,7 @@ require_once 'local.php';
 
 
 /* DB::$encoding = 'utf8';
-  DB::$user = 'cp4776_pro-em ';
+  DB::$user = 'cp4776_pro-em';
   DB::$dbName = 'cp4776_propertymanagement';
   DB::$password = "rWVaKK@0pETJ";
   DB::$port = 3306; */
@@ -229,31 +229,28 @@ $app->post('/login', function() use ($app) {
     $email = $app->request()->post('email');
     $pass = $app->request()->post('password');
 // verification    
-    $error = false;
-    $user = DB::queryFirstRow("SELECT * FROM users WHERE email=%s", $email);
-    if (!$user) {
-        $error = true;
+   // $error = false;
+    $errorList = array();
+    if (filter_var($email, FILTER_VALIDATE_EMAIL) === FALSE) {
+        array_push($errorList, "Email is invalid");
     } else {
-        if ($user['password'] != $pass) {
-            $error = true;
+        $user = DB::queryFirstRow("SELECT * FROM users WHERE email=%s", $email);
+        if (!$user) {
+            array_push($errorList, "login failed");
+        } else {
+            if ($user['password'] != $pass) {
+                array_push($errorList, "login failed");
+            }
         }
     }
-    if ($error) {
-        $app->render('login.html.twig', array("error" => true));
+    if ($errorList) {
+        $app->render('login.html.twig',  array(
+            'errorList' => $errorList));
     } else {
         unset($user['password']);
         $_SESSION['user'] = $user;
-        $houseList = DB::query("SELECT * FROM houses");
-        $HouseListWithImage = array();
-        foreach ($houseList as $h) {
-            $houseId = $h['id'];
-            $path = DB::queryFirstRow("SELECT imagepath FROM imagepaths WHERE houseId=%i", $houseId);
-            $h['imagePath'] = $path['imagepath'];
-            array_push($HouseListWithImage, $h);
-        }
-        $app->render("list_property.html.twig", array(
-            'houseList' => $HouseListWithImage
-        ));
+        $app->render("login_success.html.twig");
+     
     }
 });
 
@@ -461,8 +458,8 @@ $app->post('/:op(/:id)', function($op, $id = 0) use ($app) {
     }
 
     $imageList = $_FILES['image[]'];
-    
-   
+
+
     if ($errorList) {
         $app->render("add_property.html.twig", array(
             'v' => $valueList,
@@ -473,9 +470,9 @@ $app->post('/:op(/:id)', function($op, $id = 0) use ($app) {
         if ($op == 'edit') {
             DB::update('houses', $valueList, 'houseId=%i', $id);
             $oldImagePath = DB::query('SELECT * FROM imagepaths WHERE houseId=%i', $id);
-            //  $oldImageCounts = count($oldImagePath);
-            //  $newImageCounts = count($imageList);
-            //  if ($oldImageCounts >= $newImageCounts)
+//  $oldImageCounts = count($oldImagePath);
+//  $newImageCounts = count($imageList);
+//  if ($oldImageCounts >= $newImageCounts)
             $c = 0;
             foreach ($imageList as $image) {
                 $imagePath = "uploads/" . $image['name'];
