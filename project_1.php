@@ -6,10 +6,12 @@ session_start();
 require_once 'vendor/autoload.php';
 require_once 'local.php';
 
-//require_once 'facebook.php';
 
-
-
+/* DB::$encoding = 'utf8';
+  DB::$user = 'cp4776_pro-em ';
+  DB::$dbName = 'cp4776_propertymanagement';
+  DB::$password = "rWVaKK@0pETJ";
+  DB::$port = 3306; */
 
 use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
@@ -61,8 +63,22 @@ $twig->addGlobal('user', $_SESSION['user']);
 //============================
 //******* INDEX PAGE *********
 $app->get('/', function() use ($app) {
-
-    $app->render("index.html.twig");
+    if (!$_SESSION['user']) {
+        $app->render('index.html.twig');
+        return;
+    }
+    $userId = $_SESSION['user']['id'];
+    $houseList = DB::query("SELECT * FROM houses");
+    $HouseListWithImage = array();
+    foreach ($houseList as $h) {
+        $houseId = $h['id'];
+        $path = DB::queryFirstRow("SELECT imagepath FROM imagepaths WHERE houseId=%i", $houseId);
+        $h['imagePath'] = $path['imagepath'];
+        array_push($HouseListWithImage, $h);
+    }
+    $app->render("list_property.html.twig", array(
+        'houseList' => $HouseListWithImage
+    ));
 });
 
 $app->get('/index', function() use ($app) {
@@ -76,7 +92,7 @@ $app->post(':op', function($op) use ($app) {
     $price = $app->request()->post('price1');
     $propertyType = $app->request()->post('propertyType1');
 
-// search function of fields
+    // search function of fields
     $where = new WhereClause('and');
     if ($numberOfBedroom != "Bedrooms") {
         if (strpos($numberOfBedroom, "more")) {
@@ -101,7 +117,7 @@ $app->post(':op', function($op) use ($app) {
     $houseList = DB::query("SELECT * FROM houses WHERE %l", $where);
     $HouseListWithImage = array();
     if ($search) {
-//$ci = 0;
+        //$ci = 0;
         foreach ($houseList as $h) {
             $search = strtolower($search);
             $h_lower = array_map('strtolower', $h);
@@ -131,14 +147,16 @@ $app->post(':op', function($op) use ($app) {
     ));
 })->conditions(array(
     'op' => '(/|/index)'));
+
+
 //============================
 //******* REGISTER *********
 
-$app->get('/register', function() use ($app, $log) {
+$app->get('/register', function() use ($app) {
     $app->render('register.html.twig');
 });
 // Receiving a submission
-$app->post('/register', function() use ($app,$log) {
+$app->post('/register', function() use ($app) {
 // extract variables
     $email = $app->request()->post('email');
     $pass1 = $app->request()->post('password1');
@@ -191,7 +209,6 @@ $app->post('/register', function() use ($app,$log) {
             'password' => $pass1,
             'name' => $lastname
         ));
-        $log->debug(sprintf("User %s created", $id));
         $app->render('register_success.html.twig');
     }
 });
@@ -206,7 +223,7 @@ $app->get('/ajax/emailused/:email', function($email) {
 //=======================
 //******* Login *********
 
-$app->get('/login', function() use ($app, $log) {
+$app->get('/login', function() use ($app) {
     $app->render('login.html.twig');
 });
 
@@ -217,23 +234,28 @@ $app->post('/login', function() use ($app) {
     $error = false;
     $user = DB::queryFirstRow("SELECT * FROM users WHERE email=%s", $email);
     if (!$user) {
-        $log->debug(sprintf("User failed for email %s from IP %s", $email, $_SERVER['REMOTE_ADDR']));
         $error = true;
     } else {
         if ($user['password'] != $pass) {
-            $log->debug(sprintf("User failed for email %s from IP %s", $email, $_SERVER['REMOTE_ADDR']));
             $error = true;
         }
     }
     if ($error) {
-        $log->debug(sprintf("User failed for email %s from IP %s", $email, $_SERVER['REMOTE_ADDR']));
         $app->render('login.html.twig', array("error" => true));
     } else {
         unset($user['password']);
         $_SESSION['user'] = $user;
-
-        $log->debug(sprintf("User failed for email %s from IP %s", $user['id'], $_SERVER['REMOTE_ADDR']));
-        $app->render('login_success.html.twig');
+        $houseList = DB::query("SELECT * FROM houses");
+        $HouseListWithImage = array();
+        foreach ($houseList as $h) {
+            $houseId = $h['id'];
+            $path = DB::queryFirstRow("SELECT imagepath FROM imagepaths WHERE houseId=%i", $houseId);
+            $h['imagePath'] = $path['imagepath'];
+            array_push($HouseListWithImage, $h);
+        }
+        $app->render("list_property.html.twig", array(
+            'houseList' => $HouseListWithImage
+        ));
     }
 });
 
@@ -268,11 +290,12 @@ $app->get('/list', function() use ($app) {
 
 
 $app->post('/list', function() use ($app) {
+
     $search = $app->request()->post('search');
     $numberOfBedroom = $app->request()->post('numberOfBedroom');
     $price = $app->request()->post('price');
     $propertyType = $app->request()->post('propertyType');
-// search function of fields
+    // search function of fields
     $where = new WhereClause('and');
     if ($numberOfBedroom != "Bedrooms") {
         if (strpos($numberOfBedroom, "more")) {
@@ -284,6 +307,7 @@ $app->post('/list', function() use ($app) {
     if ($propertyType != "Type") {
         $where->add('propertyType=%s', $propertyType);
     }
+
     if ($price != "Price") {
         if (strpos($price, "less")) {
             $where->add('price<%s', substr($price, 1, 6));
@@ -296,7 +320,7 @@ $app->post('/list', function() use ($app) {
     $houseList = DB::query("SELECT * FROM houses WHERE %l", $where);
     $HouseListWithImage = array();
     if ($search) {
-//$ci = 0;
+        //$ci = 0;
         foreach ($houseList as $h) {
             $search = strtolower($search);
             $h_lower = array_map('strtolower', $h);
@@ -333,9 +357,9 @@ $app->get('/delete/:id', function($id) use ($app) {
         $app->render('first_login.html.twig');
         return;
     }
-//please fix this part it doesnot show the image and values...
+    //please fix this part it doesnot show the image and values...
     $house = DB::queryFirstRow("SELECT * FROM houses WHERE id=%i", $id);
-//
+    //
     $image = DB::query("SELECT imagePath,imageMimeType FROM imagepaths WHERE id=%i", $id);
     $app->render("property_delete.html.twig", array('h' => $house,
         'i' => $image
@@ -362,10 +386,10 @@ $app->get('/:op(/:id)', function($op, $id = 0) use ($app) {
         $app->render('first_login.html.twig');
         return;
     }
-//$userId = $_SESSION['user']['id'];
+    //$userId = $_SESSION['user']['id'];
     if ($op == 'edit') {
         $properties = DB::queryFirstRow("SELECT * FROM houses WHERE id=%i", $id);
-//not working how to  update images?
+        //not working how to  update images?
         $images = DB::queryFirstRow("SELECT imagePath,imageMimeType FROM imagePaths WHERE houseId=%i", $id);
         if (!$properties) {
             echo 'Property not found';
@@ -388,8 +412,8 @@ $app->post('/:op(/:id)', function($op, $id = 0) use ($app) {
         $app->render('first_login.html.twig');
         return;
     }
+
     $ownerId = $_SESSION['user']['id'];
-    $owner = $app->request()->post('owner');
     $postalcode = $app->request()->post('postCode');
     $address = $app->request()->post('address');
     $city = $app->request()->post('city');
@@ -399,17 +423,16 @@ $app->post('/:op(/:id)', function($op, $id = 0) use ($app) {
     $year = $app->request()->post('year');
     $propertyType = $app->request()->post('propertyType');
     $area = $app->request()->post('area');
-    $status = $app->request()->post('status');
-    $description = $app->request()->post('description');
-
+    $status = "sold";
     $valueList = array('ownerId' => $ownerId,
         'postCode' => $postalcode, 'address' => $address,
         'city' => $city, 'phoneNumber' => $phoneNumber,
         'numberOfBedroom' => $numberOfBedroom, 'price' => $price, 'yearOfBuild' => $year,
-        'propertyType' => $propertyType, 'area' => $area, 'status' => $status,
-        'description' => $description
+        'propertyType' => $propertyType, 'area' => $area, 'status' => $status
     );
 
+    // print_r($image);
+    //    
     $errorList = array();
     if (strlen($address) < 2 || strlen($address) > 300) {
         array_push($errorList, "Address must be 2-300 characters long");
@@ -440,8 +463,30 @@ $app->post('/:op(/:id)', function($op, $id = 0) use ($app) {
         array_push($errorList, "area must be between 1 and 1000000");
     }
 
-    $imageList = $_FILES['image[]'];
+    $image = $_FILES['image'];
 
+    if ($image['error'] != 0) {
+        array_push($errorList, "Image is required to create a house");
+    } else {
+        $imageInfo = getimagesize($image["tmp_name"]);
+        if (!$imageInfo) {
+            array_push($errorList, "File does not look like an valid image");
+        } else {
+// FIXME: opened a security hole here! .. must be forbidden
+            if (strstr($image["name"], "..")) {
+                array_push($errorList, "File name invalid");
+            }
+// FIXME: only allow select extensions .jpg .gif .png, never .php
+            $ext = strtolower(pathinfo($image['name'], PATHINFO_EXTENSION));
+            if (!in_array($ext, array('jpg', 'jpeg', 'gif', 'png'))) {
+                array_push($errorList, "File name invalid");
+            }
+// FIXME: do not allow file to override an previous upload
+            if (file_exists('uploads/' . $image['name'])) {
+                array_push($errorList, "File name already exists. Will not override.");
+            }
+        }
+    }
 
     if ($errorList) {
         $app->render("add_property.html.twig", array(
@@ -450,45 +495,48 @@ $app->post('/:op(/:id)', function($op, $id = 0) use ($app) {
             'operation' => ($op == 'edit' ? 'ADD' : 'Update')
         ));
     } else {
+
+        $imagePath = "uploads/" . $image['name'];
+        move_uploaded_file($image["tmp_name"], $imagePath);
         if ($op == 'edit') {
-            DB::update('houses', $valueList, 'houseId=%i', $id);
-            $oldImagePath = DB::query('SELECT * FROM imagepaths WHERE houseId=%i', $id);
-            //  $oldImageCounts = count($oldImagePath);
-            //  $newImageCounts = count($imageList);
-            //  if ($oldImageCounts >= $newImageCounts)
-            $c = 0;
-            foreach ($imageList as $image) {
-                $imagePath = "uploads/" . $image['name'];
-                $mimeType = mime_content_type($image["tmp_name"]);
-                move_uploaded_file($image["tmp_name"], $imagePath);
-                $houseId = $oldImagePath[$c] . ['id'];
-                DB::update('imagePaths', array(
-                    'imagePath' => $imagePath,
-                    'imageMimeType' => $mimeType), "houseId=%i", $houseId);
-                $c++;
+            // unlink('') OLD file - requires select            
+            $oldImagePath = DB::queryFirstField(
+                            'SELECT imagePath FROM imagepaths WHERE id=%i', $id);
+            if (($oldImagePath) && file_exists($oldImagePath)) {
+                unlink($oldImagePath);
             }
+            DB::update('houses', $valueList);
+            $houseId = DB::insertId();
+            $mimeType = mime_content_type($image["tmp_name"]);
+            DB::update('imagePaths', array(
+                'houseId' => $houseId,
+                'imagePath' => $imagePath,
+                'imageMimeType' => $mimeType), "id=%i", $id);
         } else {
+
             DB::insert('houses', $valueList);
             $houseId = DB::insertId();
-            foreach ($imageList as $image) {
-                $mimeType = mime_content_type($image["tmp_name"]);
-                $imagePath = "uploads/" . $image['name'];
-                move_uploaded_file($image["tmp_name"], $imagePath);
-                DB::insert('imagePaths', array(
-                    'houseId' => $houseId,
-                    'imagePath' => $imagePath,
-                    'imageMimeType' => $mimeType
-                ));
-            }
-            $app->render("property_add_success.html.twig");
+            $mimeType = mime_content_type($image["tmp_name"]);
+            $imagePath = "uploads/" . $image['name'];
+            move_uploaded_file($image["tmp_name"], $imagePath);
+            DB::insert('imagePaths', array(
+                'houseId' => $houseId,
+                'imagePath' => $imagePath,
+                'imageMimeType' => $mimeType
+            ));
         }
+        $app->render("property_add_success.html.twig", array(
+            "imagePath" => $imagePath
+        ));
     }
-})->conditions(array('op' => '(add|edit)', 'id' => '[0-9]+'));
+})->conditions(array(
+    'op' => '(add|edit)',
+    'id' => '[0-9]+'));
 
 
 //========================
 //******* Logout *********
-$app->get('/logout', function() use ($app, $log) {
+$app->get('/logout', function() use ($app) {
     unset($_SESSION['user']);
     $app->render('logout.html.twig');
 });
@@ -509,110 +557,6 @@ $app->get('/contactus', function() use ($app) {
 
     $app->render("contactus.html.twig");
 });
-
-//================================
-//******* Password Reset *********
-function generateRandomString($length = 10) {
-    $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    $charactersLength = strlen($characters);
-    $randomString = '';
-    for ($i = 0; $i < $length; $i++) {
-        $randomString .= $characters[rand(0, $charactersLength - 1)];
-    }
-    return $randomString;
-}
-
-$app->map('/passreset', function () use ($app, $log) {
-    // Alternative to cron-scheduled cleanup
-    if (rand(1, 1000) == 111) {
-        // TODO: do the cleanup 1 in 1000 accessed to /passreset URL
-    }
-    if ($app->request()->isGet()) {
-        $app->render('passreset.html.twig');
-    } else {
-        $email = $app->request()->post('email');
-        $user = DB::queryFirstRow("SELECT * FROM users WHERE email=%s", $email);
-        if ($user) {
-            $app->render('passreset_success.html.twig');
-            $secretToken = generateRandomString(50);
-            // VERSION 1: delete and insert
-
-            DB::delete('passresets', 'userID=%d', $user['id']);
-            DB::insert('passresets', array(
-                'userID' => $user['id'],
-                'secretToken' => $secretToken,
-                'expiryDateTime' => date("Y-m-d H:i:s", strtotime("+5 hours"))
-            ));
-            // VERSION 2: insert-update TODO
-            /* DB::insertUpdate('passresets', array(
-              'userID' => $user['id'],
-              'secretToken' => $secretToken,
-              'expiryDateTime' => date("Y-m-d H:i:s", strtotime("+5 minutes"))
-              )); */
-            // email user
-            $url = 'http://' . $_SERVER['SERVER_NAME'] . '/passreset/' . $secretToken;
-            $html = $app->view()->render('email_passreset.html.twig', array(
-                'name' => $user['name'],
-                'url' => $url
-            ));
-            $headers = "MIME-Version: 1.0\r\n";
-            $headers .= "Content-Type: text/html; charset=UTF-8\r\n";
-            $headers .= "From: Noreply <noreply@ipd9.info>\r\n";
-            $headers .= "To: " . htmlentities($user['name']) . " <" . $email . ">\r\n";
-
-            mail($email, "Password reset from E&M Real State", $html, $headers);
-        } else {
-            $app->render('passreset.html.twig', array('error' => TRUE));
-        }
-    }
-})->via('GET', 'POST');
-
-
-$app->map('/passreset/:secretToken', function($secretToken) use ($app) {
-    $row = DB::queryFirstRow("SELECT * FROM passresets WHERE secretToken=%s", $secretToken);
-    if (!$row) {
-        $app->render('passreset_notfound_expired.html.twig');
-        return;
-    }
-    if (strtotime($row['expiryDateTime']) < time()) {
-        $app->render('passreset_notfound_expired.html.twig');
-        return;
-    }
-    //
-    if ($app->request()->isGet()) {
-        $app->render('passreset_form.html.twig');
-    } else {
-        $pass1 = $app->request()->post('pass1');
-        $pass2 = $app->request()->post('pass2');
-        // TODO: verify password quality and that pass1 matches pass2
-        $errorList = array();
-        $msg = verifyPassword($pass1);
-        if ($msg !== TRUE) {
-            array_push($errorList, $msg);
-        } else if ($pass1 != $pass2) {
-            array_push($errorList, "Passwords don't match");
-        }
-        //
-        if ($errorList) {
-            $app->render('passreset_form.html.twig', array(
-                'errorList' => $errorList
-            ));
-        } else {
-            // success - reset the password
-            DB::update('users', array(
-                'password' => password_hash($pass1, CRYPT_BLOWFISH)
-                    ), "id=%d", $row['userID']);
-            DB::delete('passresets', 'secretToken=%s', $secretToken);
-            $app->render('passreset_form_success.html.twig');
-        }
-    }
-})->via('GET', 'POST');
-
-
-
-
-
-
 
 
 
