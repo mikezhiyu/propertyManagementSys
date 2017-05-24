@@ -10,7 +10,6 @@ require_once 'local.php';
 
 
 
-
 use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
 
@@ -138,7 +137,7 @@ $app->get('/register', function() use ($app, $log) {
     $app->render('register.html.twig');
 });
 // Receiving a submission
-$app->post('/register', function() use ($app,$log) {
+$app->post('/register', function() use ($app, $log) {
 // extract variables
     $email = $app->request()->post('email');
     $pass1 = $app->request()->post('password1');
@@ -205,7 +204,7 @@ $app->get('/ajax/emailused/:email', function($email) {
 
 //=======================
 //******* Login *********
-
+//have to ask teache why when I have log it doesnot work on the server?
 $app->get('/login', function() use ($app, $log) {
     $app->render('login.html.twig');
 });
@@ -217,24 +216,23 @@ $app->post('/login', function() use ($app) {
     $error = false;
     $user = DB::queryFirstRow("SELECT * FROM users WHERE email=%s", $email);
     if (!$user) {
-        $log->debug(sprintf("User failed for email %s from IP %s", $email, $_SERVER['REMOTE_ADDR']));
+        //  $log->debug(sprintf("User failed for email %s from IP %s", $email, $_SERVER['REMOTE_ADDR']));
         $error = true;
     } else {
         if ($user['password'] != $pass) {
-            $log->debug(sprintf("User failed for email %s from IP %s", $email, $_SERVER['REMOTE_ADDR']));
+            //    $log->debug(sprintf("User failed for email %s from IP %s", $email, $_SERVER['REMOTE_ADDR']));
             $error = true;
         }
     }
     if ($error) {
-        $log->debug(sprintf("User failed for email %s from IP %s", $email, $_SERVER['REMOTE_ADDR']));
+        //  $log->debug(sprintf("User failed for email %s from IP %s", $email, $_SERVER['REMOTE_ADDR']));
         $app->render('login.html.twig', array("error" => true));
     } else {
         unset($user['password']);
         $_SESSION['user'] = $user;
 
-       // $log->debug(sprintf("User failed for email %s from IP %s", $user['id'], $_SERVER['REMOTE_ADDR']));
+        // $log->debug(sprintf("User failed for email %s from IP %s", $user['id'], $_SERVER['REMOTE_ADDR']));
         $app->render('login_success.html.twig');
-
     }
 });
 
@@ -505,10 +503,88 @@ $app->get('/property/:id', function($id) use ($app) {
     );
 });
 
+//========================
+//******* agents *********
 
+$app->get('/agents', function() use ($app) {
+
+    $app->render("agents.html.twig");
+});
+
+
+//========================
+//******* about us *********
+
+$app->get('/aboutus', function() use ($app) {
+
+    $app->render("aboutus.html.twig");
+});
+
+
+//========================
+//******* contact us *********
 $app->get('/contactus', function() use ($app) {
 
     $app->render("contactus.html.twig");
+});
+
+$app->post('/contactus', function() use ($app) {
+// extract variables
+    $fullName = $app->request()->post('fullName');
+    $email = $app->request()->post('email');
+    $phoneNumber = $app->request()->post('phoneNumber');
+    $message = $app->request()->post('message');
+    $userId = $_SESSION['user']['id'];
+
+// list of values to retain after a failed submission
+    $valueList = array(
+        'fullName' => $fullName,
+        'email' => $email,
+        'phoneNumber' => $phoneNumber,
+        'message' => $message
+    );
+// check for errors and collect error messages
+    $errorList = array();
+    if (filter_var($email, FILTER_VALIDATE_EMAIL) === FALSE) {
+        array_push($errorList, "Email is invalid");
+    } else {
+        $user = DB::queryFirstRow("SELECT * FROM contactUs WHERE email=%s", $email);
+        if ($user) {
+            array_push($errorList, "Email already in use");
+        }
+    }
+    if (strlen($fullName) < 2 || strlen($fullName) > 150 || empty($fullName)) {
+        array_push($errorList, "FullName Name too short or empty, must be 2 characters or longer");
+    }
+    if (strlen($message) < 2 || strlen($message) > 1000 || empty($message)) {
+        array_push($errorList, "FullName Name too short or empty, must be 2 characters or longer");
+    }
+
+    $valid = (bool) preg_match("/^[0-9]{3}-[0-9]{3}-[0-9]{4}$/", $phoneNumber);
+    if (!$valid) {
+        array_push($errorList, "phone number is invalid!");
+    }
+
+
+
+//
+    if ($errorList) {
+        $app->render('contactus.html.twig', array(
+            'errorList' => $errorList,
+            'v' => $valueList
+        ));
+    } else {
+        DB::insert('contactUs', array(
+            'fullName'=>$fullName,
+            'email' => $email,
+            'phoneNumber' => $phoneNumber,
+            'message' => $message,
+            'userId' =>$userId
+            
+        ));
+       
+        $app->render('contactus_success.html.twig');
+    }
 });
 
 //================================
