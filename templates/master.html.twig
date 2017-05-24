@@ -90,7 +90,7 @@
                         <li><a href="/agents">Agents</a></li>         
                         <li><a href="/login">Log in</a></li>
                         <li><a href="/register">Sign Up</a></li>
-                        <li><a href="/contactus">Contact</a></li>
+                        <li><a href="/contactus">Contact Us</a></li>
                         <div class="navbar-collapse  collapse" style="float:left">
                             {% if user %}
                                 <span style="color: yellow">  Welcome{{user.firstName}} ({{ user.email }})</span><a href="/logout"><br>Logout</a>
@@ -111,9 +111,10 @@
             <a href="/index"><img  src="/images/logo2.png" height="100" width="300" alt="Realestate"></a>
 
             <ul class="pull-right">
-                <!--please fix the delete href!!!-->
+
                 <li><a href="/image/add">Add images</a></li>
                 <li><a href="/house/add">Add a Property</a></li>
+                <li><a href="/user/house">Edit | Remove a Property</a></li>
                 <li><a href="/house/list">All Properties</a></li>
             </ul>
         </div>

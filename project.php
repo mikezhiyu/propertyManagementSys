@@ -178,6 +178,7 @@ $app->post('/register', function() use ($app, $log) {
                     . "one uppercase letter, and a digit");
         }
     }
+
 //
     if ($errorList) {
         $app->render('register.html.twig', array(
@@ -204,34 +205,44 @@ $app->get('/ajax/emailused/:email', function($email) {
 
 //=======================
 //******* Login *********
+//
 //have to ask teache why when I have log it doesnot work on the server?
 $app->get('/login', function() use ($app, $log) {
     $app->render('login.html.twig');
 });
 
 $app->post('/login', function() use ($app) {
+//if the user allready loggedin has to logget out first then login with the other user!!!
+//is it correct?
+    /* if ($_SESSION['user']) {
+      $app->render('logout.html.twig');
+      return;
+      } */
+
     $email = $app->request()->post('email');
     $pass = $app->request()->post('password');
 // verification    
     $error = false;
     $user = DB::queryFirstRow("SELECT * FROM users WHERE email=%s", $email);
     if (!$user) {
-        //  $log->debug(sprintf("User failed for email %s from IP %s", $email, $_SERVER['REMOTE_ADDR']));
+//  $log->debug(sprintf("User failed for email %s from IP %s", $email, $_SERVER['REMOTE_ADDR']));
         $error = true;
     } else {
         if ($user['password'] != $pass) {
-            //    $log->debug(sprintf("User failed for email %s from IP %s", $email, $_SERVER['REMOTE_ADDR']));
+//    $log->debug(sprintf("User failed for email %s from IP %s", $email, $_SERVER['REMOTE_ADDR']));
             $error = true;
         }
     }
     if ($error) {
-        //  $log->debug(sprintf("User failed for email %s from IP %s", $email, $_SERVER['REMOTE_ADDR']));
+//  $log->debug(sprintf("User failed for email %s from IP %s", $email, $_SERVER['REMOTE_ADDR']));
         $app->render('login.html.twig', array("error" => true));
+
+//
     } else {
         unset($user['password']);
         $_SESSION['user'] = $user;
 
-        // $log->debug(sprintf("User failed for email %s from IP %s", $user['id'], $_SERVER['REMOTE_ADDR']));
+// $log->debug(sprintf("User failed for email %s from IP %s", $user['id'], $_SERVER['REMOTE_ADDR']));
         $app->render('login_success.html.twig');
     }
 });
@@ -248,8 +259,31 @@ $app->get('/propertydetail/:id', function($id) use ($app) {
     );
 });
 
+//=================================================
+//******* Users house List to Edit and Delete******
+
+$app->get('/user/house', function() use ($app) {
+    //user can only modify their home
+    if (!$_SESSION['user']) {
+        $app->render('first_login.html.twig');
+        return;
+    }
+
+    $houseList = DB::query("SELECT * FROM houses");
+    $HouseListWithImage = array();
+    foreach ($houseList as $h) {
+        $houseId = $h['id'];
+        $path = DB::queryFirstRow("SELECT imagepath FROM imagepaths WHERE houseId=%i", $houseId);
+        $h['imagePath'] = $path['imagepath'];
+        array_push($HouseListWithImage, $h);
+    }
+    $app->render("user_list_property.html.twig", array(
+        'houseList' => $HouseListWithImage
+    ));
+});
+
 //=============================
-//******* HOUSE LIST and search*********
+//******* HOUSE LIST &SEARCH*********
 
 $app->get('/house/list', function() use ($app) {
     $houseList = DB::query("SELECT * FROM houses");
@@ -388,7 +422,7 @@ $app->post('/house/:op(/:id)', function($op, $id = 0) use ($app) {
         return;
     }
     $ownerId = $_SESSION['user']['id'];
-    $owner = $app->request()->post('owner');
+    // $owner = $app->request()->post('owner');
     $postalcode = $app->request()->post('postCode');
     $address = $app->request()->post('address');
     $city = $app->request()->post('city');
@@ -452,9 +486,9 @@ $app->post('/house/:op(/:id)', function($op, $id = 0) use ($app) {
         if ($op == 'edit') {
             DB::update('houses', $valueList, 'houseId=%i', $id);
             $oldImagePath = DB::query('SELECT * FROM imagepaths WHERE houseId=%i', $id);
-            //  $oldImageCounts = count($oldImagePath);
-            //  $newImageCounts = count($imageList);
-            //  if ($oldImageCounts >= $newImageCounts)
+//  $oldImageCounts = count($oldImagePath);
+//  $newImageCounts = count($imageList);
+//  if ($oldImageCounts >= $newImageCounts)
             $c = 0;
             foreach ($imageList as $image) {
                 $imagePath = "uploads/" . $image['name'];
@@ -552,7 +586,7 @@ $app->post('/image/:op(/:id)', function($op, $id = 0) use ($app) {
     }
     $valid = (bool) preg_match("/^[0-9]{3}-[0-9]{3}-[0-9]{4}$/", $phoneNumber);
     if (!$valid) {
-        array_push($errorList, "phone number is invalid!");
+        array_push($errorList, "phone number is invalid  => 000-000-0000!");
     }
     if (empty($price) || $price < 0 || $price > 9999999) {
         array_push($errorList, "Price must be between 0 and 9999999");
@@ -581,9 +615,9 @@ $app->post('/image/:op(/:id)', function($op, $id = 0) use ($app) {
         if ($op == 'edit') {
             DB::update('houses', $valueList, 'houseId=%i', $id);
             $oldImagePath = DB::query('SELECT * FROM imagepaths WHERE houseId=%i', $id);
-            //  $oldImageCounts = count($oldImagePath);
-            //  $newImageCounts = count($imageList);
-            //  if ($oldImageCounts >= $newImageCounts)
+//  $oldImageCounts = count($oldImagePath);
+//  $newImageCounts = count($imageList);
+//  if ($oldImageCounts >= $newImageCounts)
             $c = 0;
             foreach ($imageList as $image) {
                 $imagePath = "uploads/" . $image['name'];
@@ -658,6 +692,11 @@ $app->get('/contactus', function() use ($app) {
 });
 
 $app->post('/contactus', function() use ($app) {
+
+    if (!$_SESSION['user']) {
+        $app->render('first_login.html.twig');
+        return;
+    }
 // extract variables
     $fullName = $app->request()->post('fullName');
     $email = $app->request()->post('email');
@@ -685,14 +724,16 @@ $app->post('/contactus', function() use ($app) {
     if (strlen($fullName) < 2 || strlen($fullName) > 150 || empty($fullName)) {
         array_push($errorList, "FullName Name too short or empty, must be 2 characters or longer");
     }
-    if (strlen($message) < 2 || strlen($message) > 1000 || empty($message)) {
-        array_push($errorList, "FullName Name too short or empty, must be 2 characters or longer");
-    }
-
+//only first 3 charachter are shown up in the database
     $valid = (bool) preg_match("/^[0-9]{3}-[0-9]{3}-[0-9]{4}$/", $phoneNumber);
     if (!$valid) {
-        array_push($errorList, "phone number is invalid!");
+        array_push($errorList, "phone number is invalid  => 000-000-0000!");
     }
+
+    if (strlen($message) < 2 || strlen($message) > 1000 || empty($message)) {
+        array_push($errorList, "message too short or empty, must be 2 characters or longer");
+    }
+
 
 
 
@@ -704,14 +745,13 @@ $app->post('/contactus', function() use ($app) {
         ));
     } else {
         DB::insert('contactUs', array(
-            'fullName'=>$fullName,
+            'fullName' => $fullName,
             'email' => $email,
             'phoneNumber' => $phoneNumber,
             'message' => $message,
-            'userId' =>$userId
-            
+            'userId' => $userId
         ));
-       
+
         $app->render('contactus_success.html.twig');
     }
 });
@@ -729,9 +769,9 @@ function generateRandomString($length = 10) {
 }
 
 $app->map('/passreset', function () use ($app, $log) {
-    // Alternative to cron-scheduled cleanup
+// Alternative to cron-scheduled cleanup
     if (rand(1, 1000) == 111) {
-        // TODO: do the cleanup 1 in 1000 accessed to /passreset URL
+// TODO: do the cleanup 1 in 1000 accessed to /passreset URL
     }
     if ($app->request()->isGet()) {
         $app->render('passreset.html.twig');
@@ -741,7 +781,7 @@ $app->map('/passreset', function () use ($app, $log) {
         if ($user) {
             $app->render('passreset_success.html.twig');
             $secretToken = generateRandomString(50);
-            // VERSION 1: delete and insert
+// VERSION 1: delete and insert
 
             DB::delete('passresets', 'userID=%d', $user['id']);
             DB::insert('passresets', array(
@@ -749,13 +789,13 @@ $app->map('/passreset', function () use ($app, $log) {
                 'secretToken' => $secretToken,
                 'expiryDateTime' => date("Y-m-d H:i:s", strtotime("+5 hours"))
             ));
-            // VERSION 2: insert-update TODO
+// VERSION 2: insert-update TODO
             /* DB::insertUpdate('passresets', array(
               'userID' => $user['id'],
               'secretToken' => $secretToken,
               'expiryDateTime' => date("Y-m-d H:i:s", strtotime("+5 minutes"))
               )); */
-            // email user
+// email user
             $url = 'http://' . $_SERVER['SERVER_NAME'] . '/passreset/' . $secretToken;
             $html = $app->view()->render('email_passreset.html.twig', array(
                 'name' => $user['name'],
@@ -784,28 +824,36 @@ $app->map('/passreset/:secretToken', function($secretToken) use ($app) {
         $app->render('passreset_notfound_expired.html.twig');
         return;
     }
-    //
+//
     if ($app->request()->isGet()) {
         $app->render('passreset_form.html.twig');
     } else {
-        $pass1 = $app->request()->post('pass1');
+        $pass1 = $app->request()->post('password');
         $pass2 = $app->request()->post('pass2');
-        // TODO: verify password quality and that pass1 matches pass2
+// TODO: verify password quality and that pass1 matches pass2
         $errorList = array();
-        $msg = verifyPassword($pass1);
-        if ($msg !== TRUE) {
-            array_push($errorList, $msg);
-        } else if ($pass1 != $pass2) {
-            array_push($errorList, "Passwords don't match");
+
+        if ($pass1 != $pass2) {
+            array_push($errorList, "Passwords do not match");
+        } else {
+            if (strlen($pass1) < 6) {
+                array_push($errorList, "Password too short, must be 6 characters or longer");
+            }
+            if (preg_match('/[A-Z]/', $pass1) != 1 || preg_match('/[a-z]/', $pass1) != 1 || preg_match('/[0-9]/', $pass1) != 1) {
+                array_push($errorList, "Password must contain at least one lowercase, "
+                        . "one uppercase letter, and a digit");
+            }
         }
-        //
+
+//
         if ($errorList) {
             $app->render('passreset_form.html.twig', array(
                 'errorList' => $errorList
             ));
         } else {
-            // success - reset the password
+// success - reset the password
             DB::update('users', array(
+                //mr mike this part cannot update the current password????!!!!
                 'password' => password_hash($pass1, CRYPT_BLOWFISH)
                     ), "id=%d", $row['userID']);
             DB::delete('passresets', 'secretToken=%s', $secretToken);

@@ -2,8 +2,15 @@
 {% extends "master.html.twig" %}
 {% block title %}Contact Us{% endblock %}
 {% block content %}
+
+
+    <div class="inside-banner">
+        <h2 style="margin-left: 80px;">To Contact Us Please LOGIN</h2>
+
+    </div>
+    <!-- banner -->
     {% if errorList %}
-        <div style="margin-left: 370px;">
+        <div style="margin-left: 370px;margin-top: 50px;">
             <ul class="errorList" style="font-weight: bolder;color: red;">
                 {% for error in errorList %}
                     <li >{{ error }}</li>
@@ -12,15 +19,6 @@
         </div>
 
     {% endif %}
-
-    <div class="inside-banner">
-        <div class="container"> 
-            <span class="pull-right"><a href="#">Home</a> / Contact Us</span>
-            <h2>Contact Us</h2>
-        </div>
-    </div>
-    <!-- banner -->
-
 
     <div class="container">
         <div class="spacer">
