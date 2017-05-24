@@ -232,7 +232,7 @@ $app->post('/login', function() use ($app) {
         unset($user['password']);
         $_SESSION['user'] = $user;
 
-        $log->debug(sprintf("User failed for email %s from IP %s", $user['id'], $_SERVER['REMOTE_ADDR']));
+       // $log->debug(sprintf("User failed for email %s from IP %s", $user['id'], $_SERVER['REMOTE_ADDR']));
         $app->render('login_success.html.twig');
     }
 });
