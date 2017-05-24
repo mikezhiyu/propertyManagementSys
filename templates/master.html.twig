@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
     <head>
@@ -7,30 +8,62 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 
-    <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.css" />
-    <link rel="stylesheet" href="assets/style.css"/>
+    <link rel="stylesheet" href="/assets/bootstrap/css/bootstrap.css" />
+    <link rel="stylesheet" href="/assets/style.css"/>
     <script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
-    <script src="assets/bootstrap/js/bootstrap.js"></script>
-    <script src="assets/script.js"></script>
+    <script src="/assets/bootstrap/js/bootstrap.js"></script>
+    <script src="/assets/script.js"></script>
 
     <!-- Owl stylesheet -->
-    <link rel="stylesheet" href="assets/owl-carousel/owl.carousel.css">
-    <link rel="stylesheet" href="assets/owl-carousel/owl.theme.css">
-    <script src="assets/owl-carousel/owl.carousel.js"></script>
+    <link rel="stylesheet" href="/assets/owl-carousel/owl.carousel.css">
+    <link rel="stylesheet" href="/assets/owl-carousel/owl.theme.css">
+    <script src="/assets/owl-carousel/owl.carousel.js"></script>
     <!-- Owl stylesheet -->
 
 
     <!-- slitslider -->
-    <link rel="stylesheet" type="text/css" href="assets/slitslider/css/style.css" />
-    <link rel="stylesheet" type="text/css" href="assets/slitslider/css/custom.css" />
-    <script type="text/javascript" src="assets/slitslider/js/modernizr.custom.79639.js"></script>
-    <script type="text/javascript" src="assets/slitslider/js/jquery.ba-cond.min.js"></script>
-    <script type="text/javascript" src="assets/slitslider/js/jquery.slitslider.js"></script>
+    <link rel="stylesheet" type="text/css" href="/assets/slitslider/css/style.css" />
+    <link rel="stylesheet" type="text/css" href="/assets/slitslider/css/custom.css" />
+    <script type="text/javascript" src="/assets/slitslider/js/modernizr.custom.79639.js"></script>
+    <script type="text/javascript" src="/assets/slitslider/js/jquery.ba-cond.min.js"></script>
+    <script type="text/javascript" src="/assets/slitslider/js/jquery.slitslider.js"></script>
     <!-- slitslider -->
 
 </head>
 
 <body>
+    <script>
+
+        //like and share the website on face book
+        window.fbAsyncInit = function () {
+            FB.init({
+                appId: '315314182235679',
+                xfbml: true,
+                version: 'v2.9'
+            });
+            FB.AppEvents.logPageView();
+        };
+
+        (function (d, s, id) {
+            var js, fjs = d.getElementsByTagName(s)[0];
+            if (d.getElementById(id)) {
+                return;
+            }
+            js = d.createElement(s);
+            js.id = id;
+            js.src = "//connect.facebook.net/en_US/sdk.js";
+            fjs.parentNode.insertBefore(js, fjs);
+        }(document, 'script', 'facebook-jssdk'));
+
+//check login status
+        FB.getLoginStatus(function (response) {
+            statusChangeCallback(response);
+            
+        });
+        
+       
+        
+    </script>
     <!-- Header Starts -->
     <div class="navbar-wrapper">
         <div class="navbar-inverse" role="navigation">
@@ -46,6 +79,12 @@
                 <!-- Nav Starts -->
                 <div class="navbar-collapse  collapse" >
                     <ul class="nav navbar-nav navbar-right">
+                        <li
+                            class="fb-like"
+                            data-share="true"
+                            data-width="450"
+                            data-show-faces="true">
+                        </li>
                         <li class="active"><a href="/index">Home</a></li>
                         <li><a href="">About</a></li>
                         <li><a href="">Agents</a></li>         
@@ -54,7 +93,7 @@
                         <li><a href="/contactus">Contact</a></li>
                         <div class="navbar-collapse  collapse" style="float:left">
                             {% if user %}
-                                <span style="color: yellow">  Welcome {{ user.email }}, you may</span><a href="/logout"><br>Logout</a>
+                                <span style="color: yellow">  Welcome{{user.firstName}} ({{ user.email }})</span><a href="/logout"><br>Logout</a>
                                 {% endif %}
                         </div>
                     </ul>
@@ -69,13 +108,13 @@
 
         <!-- Header Starts -->
         <div class="header">
-            <a href="/index"><img  src="images/logo2.png" height="100" width="300" alt="Realestate"></a>
+            <a href="/index"><img  src="/images/logo2.png" height="100" width="300" alt="Realestate"></a>
 
             <ul class="pull-right">
                 <!--please fix the delete href!!!-->
-                      
-                <li><a href="/add"> Add a Property</a></li>
-                <li><a href="/list"> All Properties</a></li>
+
+                <li><a href="/add">Add a Property</a></li>
+                <li><a href="/list">All Properties</a></li>
             </ul>
         </div>
         <!-- #Header Starts -->
@@ -109,10 +148,10 @@
 
             <div class="col-lg-3 col-sm-3">
                 <h4>Follow us</h4>
-                <a href="#"><img src="images/facebook.png" alt="facebook"></a>
-                <a href="#"><img src="images/twitter.png" alt="twitter"></a>
-                <a href="#"><img src="images/linkedin.png" alt="linkedin"></a>
-                <a href="#"><img src="images/instagram.png" alt="instagram"></a>
+                <a href="#"><img src="/images/facebook.png" alt="facebook"></a>
+                <a href="#"><img src="/images/twitter.png" alt="twitter"></a>
+                <a href="#"><img src="/images/linkedin.png" alt="linkedin"></a>
+                <a href="#"><img src="/images/instagram.png" alt="instagram"></a>
             </div>
 
             <div class="col-lg-3 col-sm-3">
