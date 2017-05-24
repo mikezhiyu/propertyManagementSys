@@ -8,8 +8,16 @@
 
 {% block content %}
 
-    {% if loginFailed %}
-        <p   class="errorList" style="font-weight: bolder;text-align: center;color: red;">Login failed,Please try again.</p>
+
+ {% if errorList %}
+        <div style="margin-left: 370px;">
+            <ul class="errorList" style="font-weight: bolder;color: red;">
+                {% for error in errorList %}
+                    <li >{{ error }}</li>
+                    {% endfor %}
+            </ul>
+        </div>
+
     {% endif %}
 
     <div class="container" >    

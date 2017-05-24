@@ -234,6 +234,7 @@ $app->post('/login', function() use ($app) {
 
        // $log->debug(sprintf("User failed for email %s from IP %s", $user['id'], $_SERVER['REMOTE_ADDR']));
         $app->render('login_success.html.twig');
+
     }
 });
 
