@@ -63,13 +63,15 @@
                         <div class="form-group">
                             <label for="numberOfBedroom" class="col-md-3 control-label">Bedroom Number</label>
                             <div class="col-md-9">
-                                <input type="text" class="form-control" name="numberOfBedroom" value="{{v.numberOfBedroom}}" placeholder="Bedroom Number">
+                                <input type="number" class="form-control" name="numberOfBedroom" value="{{v.numberOfBedroom}}" placeholder="Bedroom Number">
+
                             </div>
                         </div>
                         <div class="form-group">
                             <label for="Price" class="col-md-3 control-label">Asking Price</label>
                             <div class="col-md-9">
                                 <input type="text" class="form-control" name="price" value="{{v.Price}}" placeholder="Asking Price">
+
                             </div>
                         </div>
                         <div class="form-group">
@@ -81,30 +83,50 @@
                         <div class="form-group">
                             <label for="propertyType" class="col-md-3 control-label">Property Type</label>
                             <div class="col-md-9">
-                                <input type="text" class="form-control" name="propertyType" value="{{v.propertyType}}" placeholder="Property Type">
+                                <select type="text" class="form-control" name="propertyType" value="{{v.propertyType}}" placeholder="Property Type">
+                                    <option>Type</option>
+                                    <option>Condo</option>
+                                    <option>Semi-detached</option>
+                                    <option>Detached</option>
+                                    <option>Townhouse</option>
+                                    <option>Others</option>
+                                </select>
                             </div>
                         </div>
                         <div class="form-group">
                             <label for="area" class="col-md-3 control-label">Area (square feet)</label>
                             <div class="col-md-9">
-                                <input type="text" class="form-control" name="area" value="{{v.area}}" placeholder="Area (square feet)">
+                                <input type="text" class="form-control" name="area" value="{{v.area}}" >
                             </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="status" class="col-md-3 control-label">status</label>
+                            <div class="col-md-9">
+                                <select type="text" class="form-control" name="status" value="{{v.status}}" placeholder="Available">
+                                    <option>available</option>
+                                    <option>sold</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="description" class="col-md-3 control-label">description</label>
+                            <textarea rows="6" class="col-md-9" class="form-control" name="description" >{{v.description}}</textarea>
                         </div>
                         <div class="form-group">
                             <label for="image" class="col-md-3 control-label">image files</label>
                             <div class="col-md-9" enctype="multipart/form-data">
-                                <!--add multiple images not working-->
-                              <!--  <input type="file" class="form-control" name="images[]" id="file" >
-                                <input type="file" class="form-control" name="images[]" id="file" >
-                                <input type="file" class="form-control" name="images[]" id="file" >-->
-                                <input type="file" class="form-control" name="image" id="file"  >
+                                <input type="file" class="form-control" name="image[]" id="file" multiple="" value="{{v.imagePath}}">
+                                <input type="file" class="form-control" name="image[]" id="file" multiple="" value="{{v.imagePath}}">
+                                <input type="file" class="form-control" name="image[]" id="file" multiple="" value="{{v.imagePath}}">
+                                <input type="file" class="form-control" name="image[]" id="file" multiple="" value="{{v.imagePath}}">
+                                
+                                
+                                
                                 {% if v.imagePath %}
-                                    <img width="200" src="/{{v.imagePath}}">
+                                    <img width="200" src="uploads/{{v.imagePath}}">
                                 {% endif %}
                             </div>
                         </div>
-
-
 
                         <div class="form-group">
                             <!-- Button -->                                        
