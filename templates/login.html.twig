@@ -13,7 +13,7 @@
     {% endif %}
 
     <div class="container" >    
-        <div id="loginbox" style="margin-left:240px;margin-top: 50px;margin-bottom: 50px" class="mainbox col-md-6 col-md-offset-3 col-sm-8 col-sm-offset-2">                    
+        <div id="loginbox"  class="mainbox col-md-6 col-md-offset-3 col-sm-8 col-sm-offset-2">                    
             <div class="panel panel-info" >
                 <div class="panel-heading">
                     <div class="panel-title">Sign In</div>
@@ -52,7 +52,19 @@
 
                             <div class="col-sm-12 controls">
                                 <input class="btn btn-warning"  type="submit" value="LOGIN"> <br>OR<br>
-                                <a id="btn-fblogin" href="#" class="btn btn-primary">Login with Facebook</a>
+                                <div id="fb-root"></div>
+                                <script>(function (d, s, id) {
+                                        var js, fjs = d.getElementsByTagName(s)[0];
+                                        if (d.getElementById(id))
+                                            return;
+                                        js = d.createElement(s);
+                                        js.id = id;
+                                        js.src = "//connect.facebook.net/en_US/sdk.js#xfbml=1&version=v2.9&appId=315314182235679";
+                                        fjs.parentNode.insertBefore(js, fjs);
+                                    }(document, 'script', 'facebook-jssdk'));</script>
+                                
+                                <div  class="fb-login-button" data-max-rows="1" data-size="large" data-button-type="continue_with" data-show-faces="false" data-auto-logout-link="false" data-use-continue-as="true"></div>
+                             
                             </div>
                         </div>
 
@@ -66,14 +78,14 @@
                                         Sign Up Here
                                     </a>
                                 </div>
-                                 <div style="border-top: 1px solid#888; padding-top:15px; font-size:85%" >
-                                  forgot your password?
+                                <div style="border-top: 1px solid#888; padding-top:15px; font-size:85%" >
+                                    forgot your password?
                                     <a href="/passreset" >
 
-                                       Reset it
+                                        Reset it
                                     </a>
                                 </div>
-                                
+
                             </div>
                         </div>    
                     </form>     

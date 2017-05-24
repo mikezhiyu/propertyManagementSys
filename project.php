@@ -6,14 +6,15 @@ session_cache_limiter(false);
 session_start();
 
 require_once 'vendor/autoload.php';
-require_once 'local.php';
+//require_once 'local.php';
+//require_once 'facebook.php';
 
 
-/* DB::$encoding = 'utf8';
-  DB::$user = 'cp4776_pro-em';
-  DB::$dbName = 'cp4776_propertymanagement';
-  DB::$password = "rWVaKK@0pETJ";
-  DB::$port = 3306; */
+DB::$encoding = 'utf8';
+DB::$user = 'cp4776_pro-em';
+DB::$dbName = 'cp4776_propertymanagement';
+DB::$password = "rWVaKK@0pETJ";
+DB::$port = 3306;
 
 use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
@@ -463,7 +464,7 @@ $app->post('/:op(/:id)', function($op, $id = 0) use ($app) {
     }
 
     $imageList = $_FILES['image'];
-    
+
     foreach ($imageList as $image) {
         if ($image[0]['error'] != 0) {
             array_push($errorList, "Image is required to create a house");
@@ -555,8 +556,6 @@ $app->get('/contactus', function() use ($app) {
     $app->render("contactus.html.twig");
 });
 
-
-
 //================================
 //******* Password Reset *********
 function generateRandomString($length = 10) {
@@ -571,7 +570,7 @@ function generateRandomString($length = 10) {
 
 $app->map('/passreset', function () use ($app, $log) {
     // Alternative to cron-scheduled cleanup
-    if (rand(1,1000) == 111) {
+    if (rand(1, 1000) == 111) {
         // TODO: do the cleanup 1 in 1000 accessed to /passreset URL
     }
     if ($app->request()->isGet()) {
@@ -583,19 +582,19 @@ $app->map('/passreset', function () use ($app, $log) {
             $app->render('passreset_success.html.twig');
             $secretToken = generateRandomString(50);
             // VERSION 1: delete and insert
-            /*
-              DB::delete('passresets', 'userID=%d', $user['ID']);
+            
+              DB::delete('passresets', 'userID=%d', $user['id']);
               DB::insert('passresets', array(
-              'userID' => $user['ID'],
+              'userID' => $user['id'],
               'secretToken' => $secretToken,
               'expiryDateTime' => date("Y-m-d H:i:s", strtotime("+5 hours"))
-              )); */
+              )); 
             // VERSION 2: insert-update TODO
-            DB::insertUpdate('passresets', array(
+           /* DB::insertUpdate('passresets', array(
                 'userID' => $user['id'],
                 'secretToken' => $secretToken,
                 'expiryDateTime' => date("Y-m-d H:i:s", strtotime("+5 minutes"))
-            ));
+            ));*/
             // email user
             $url = 'http://' . $_SERVER['SERVER_NAME'] . '/passreset/' . $secretToken;
             $html = $app->view()->render('email_passreset.html.twig', array(
@@ -603,11 +602,11 @@ $app->map('/passreset', function () use ($app, $log) {
                 'url' => $url
             ));
             $headers = "MIME-Version: 1.0\r\n";
-            $headers.= "Content-Type: text/html; charset=UTF-8\r\n";
-            $headers.= "From: Noreply <noreply@ipd8.info>\r\n";
-            $headers.= "To: " . htmlentities($user['name']) . " <" . $email . ">\r\n";
+            $headers .= "Content-Type: text/html; charset=UTF-8\r\n";
+            $headers .= "From: Noreply <noreply@ipd9.info>\r\n";
+            $headers .= "To: " . htmlentities($user['name']) . " <" . $email . ">\r\n";
 
-            mail($email, "Password reset from SlimShop", $html, $headers);
+            mail($email, "Password reset from E&M Real State", $html, $headers);
         } else {
             $app->render('passreset.html.twig', array('error' => TRUE));
         }
@@ -648,12 +647,15 @@ $app->map('/passreset/:secretToken', function($secretToken) use ($app) {
             // success - reset the password
             DB::update('users', array(
                 'password' => password_hash($pass1, CRYPT_BLOWFISH)
-                    ), "ID=%d", $row['userID']);
-            DB::delete('passresets','secretToken=%s', $secretToken);
+                    ), "id=%d", $row['userID']);
+            DB::delete('passresets', 'secretToken=%s', $secretToken);
             $app->render('passreset_form_success.html.twig');
         }
     }
 })->via('GET', 'POST');
+
+
+
 
 
 
