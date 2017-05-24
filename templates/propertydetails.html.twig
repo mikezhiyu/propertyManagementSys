@@ -1,5 +1,5 @@
 
-{% extends "master1.html.twig" %}
+{% extends "master.html.twig" %}
 {% block title %}Property Detail{% endblock %}
 {% block content %}
     <div class="inside-banner">
@@ -71,11 +71,11 @@
                                     <div class="carousel-inner">
                                         {% for i in images %}
                                             {% if  loop.index == 1 %}
-                                                <div class="item active">
+                                                <div class="item active"/>
                                                 {% else %}
                                                     <div class="item">
                                                     {% endif %}  
-                                                    <img src="../{{i.imagePath}}" class="properties" alt="properties" />
+                                                    <img src="/{{i.imagePath}}" class="properties" alt="properties" />
                                                 </div>
                                             {% endfor %}
                                         </div>
