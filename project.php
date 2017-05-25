@@ -198,7 +198,7 @@ $app->post('/register', function() use ($app, $log) {
     } else {
         DB::insert('users', array(
             'email' => $email,
-            'password' => $pass1,
+            'password' => password_hash($pass1, CRYPT_BLOWFISH),
             'name' => $lastname
         ));
         $log->debug(sprintf("User %s created", $id));
