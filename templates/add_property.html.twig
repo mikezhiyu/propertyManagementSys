@@ -31,7 +31,7 @@
                         <div class="form-group">
                             <label for="text" class="col-md-3 control-label">Owner</label>
                             <div class="col-md-9">
-                                <input type="text" class="form-control" name="Owner" placeholder="Owner" value="{{p.name}}">
+                                <input type="text" class="form-control" name="Owner" placeholder="Owner" value="{{v.name}}">
                             </div>
                         </div>
                         <div class="form-group">
@@ -100,17 +100,21 @@
                             </div>
                         </div>
                         <div class="form-group">
+
                             <label for="status" class="col-md-3 control-label">Status</label>
                             <div class="col-md-9">
                                 <select type="text" class="form-control" name="status" value="{{v.status}}" placeholder="Available">
                                     <option>Available</option>
                                     <option>Sold</option>
+
                                 </select>
                             </div>
                         </div>
                         <div class="form-group">
+
                             <label for="description" class="col-md-3 control-label">Description</label>
                             <textarea rows="6" class="col-md-9" style="width: 68%;margin-left: 15px;" class="form-control" name="description" >{{v.description}}</textarea>
+
                         </div>
 
                         <div class="form-group">

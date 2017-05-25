@@ -54,7 +54,9 @@
                 </div>
                 <div class="col-lg-9 col-sm-8 ">
 
+
                     <h2>{{h.numberOfBedroom}} Bedroom(s) |<span style="color:green;  text-transform: uppercase;"> {{h.propertyType}} </span> </h2>
+
 
                     <div class="row">
                         <div class="col-lg-8">
@@ -72,12 +74,14 @@
                                         {% for i in images %}
                                             {% if  loop.index == 1 %}
                                                 <div class="item active"/>
-                                                {% else %}
-                                                    <div class="item">
-                                                    {% endif %}  
-                                                    <img src="/{{i.imagePath}}" class="properties" alt="properties" />
+
+                                            {% else %}
+                                                <div class="item">
+                                                {% endif %}  
+                                                <img src="/{{i.imagePath}}" class="properties" alt="properties" />
+
                                                 </div>
-                                            {% endfor %}
+                                        {% endfor %}
                                         </div>
                                         <a class="left carousel-control" href="#myCarousel" data-slide="prev"><span class="glyphicon glyphicon-chevron-left"></span></a>
                                         <a class="right carousel-control" href="#myCarousel" data-slide="next"><span class="glyphicon glyphicon-chevron-right"></span></a>
