@@ -7,18 +7,20 @@
 {% block content %}
 
     {% if errorList %}
-        <ul class="errorList">
-            {% for error in errorList %}
-                <li>{{ error }}</li>
-                {% endfor %}
-        </ul>
+        <div style="margin-left: 430px;">
+            <ul class="errorList" class="errorList" style="font-weight: bolder;color: red;">
+                {% for error in errorList %}
+                    <li>{{ error }}</li>
+                    {% endfor %}
+            </ul>
+        </div>
     {% endif %}
 
 
     <div class="container">  
-        <div id="signupbox" style="margin-left:240px;margin-top: 50px;margin-bottom: 50px" class="mainbox col-md-6 col-md-offset-3 col-sm-8 col-sm-offset-2">
+        <div id="signupbox"  class="mainbox col-md-6 col-md-offset-3 col-sm-8 col-sm-offset-2">
             <div class="panel panel-info">
-                
+
                 <div class="panel-body" >
                     <form id="signupform" class="form-horizontal" role="form" method="post" enctype="multipart/form-data">
                         <div id="signupalert" style="display:none" class="alert alert-danger">
@@ -98,30 +100,30 @@
                             </div>
                         </div>
                         <div class="form-group">
-                            <label for="status" class="col-md-3 control-label">status</label>
+                            <label for="status" class="col-md-3 control-label">Status</label>
                             <div class="col-md-9">
                                 <select type="text" class="form-control" name="status" value="{{v.status}}" placeholder="Available">
-                                    <option>available</option>
-                                    <option>sold</option>
+                                    <option>Available</option>
+                                    <option>Sold</option>
                                 </select>
                             </div>
                         </div>
                         <div class="form-group">
-                            <label for="description" class="col-md-3 control-label">description</label>
-                            <textarea rows="6" class="col-md-9" class="form-control" name="description" >{{v.description}}</textarea>
+                            <label for="description" class="col-md-3 control-label">Description</label>
+                            <textarea rows="6" class="col-md-9" style="width: 68%;margin-left: 15px;" class="form-control" name="description" >{{v.description}}</textarea>
                         </div>
-                        
+
                         <div class="form-group">
                             <!-- Button -->                                        
                             <div class="col-md-offset-3 col-md-9">
-                                <input type="submit" value="{{operation}} House">
+                                <input type="submit" value="{{operation}} House" class="btn btn-danger" style="width: 40%;">
                             </div>
                         </div>
 
                         <div style="border-top: 1px solid #999; padding-top:20px"  class="form-group">
 
                             <div class="col-md-offset-3 col-md-9">
-                                <button id="btn-fbsignup" type="button" class="btn btn-primary"><i class="icon-facebook"></i>   Sign Up with Facebook</button>
+                                <button  type="button" class="btn btn-primary"><i class="icon-facebook"></i>   Sign Up with Facebook</button>
                             </div>  
                         </div>
                     </form>

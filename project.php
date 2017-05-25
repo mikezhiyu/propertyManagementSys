@@ -57,6 +57,16 @@ if (!isset($_SESSION['user'])) {
 $twig = $app->view()->getEnvironment();
 $twig->addGlobal('user', $_SESSION['user']);
 
+////============================
+//******* Admin PAGE *********
+$app->get('/admin', function() use ($app) {
+
+    $app->render("admin_menu.html.twig");
+});
+
+
+
+
 //============================
 //******* INDEX PAGE *********
 $app->get('/', function() use ($app) {
@@ -262,14 +272,19 @@ $app->get('/propertydetail/:id', function($id) use ($app) {
 //=================================================
 //******* Users house List to Edit and Delete******
 
+
 $app->get('/user/house', function() use ($app) {
-    //user can only modify their home
+   
     if (!$_SESSION['user']) {
         $app->render('first_login.html.twig');
         return;
     }
 
-    $houseList = DB::query("SELECT * FROM houses");
+     // FIX ME: user can list/update/delete their home
+    $houseList = DB::query("SELECT *"
+                    . "FROM houses INNER JOIN users ON "
+                    . "houses.ownerId = users.id");
+                  //  . "WHERE ownerId=id");
     $HouseListWithImage = array();
     foreach ($houseList as $h) {
         $houseId = $h['id'];
@@ -281,6 +296,10 @@ $app->get('/user/house', function() use ($app) {
         'houseList' => $HouseListWithImage
     ));
 });
+
+
+
+
 
 //=============================
 //******* HOUSE LIST &SEARCH*********
