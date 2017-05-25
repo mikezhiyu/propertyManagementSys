@@ -29,6 +29,8 @@
     <script type="text/javascript" src="/assets/slitslider/js/jquery.slitslider.js"></script>
     <!-- slitslider -->
 
+
+
 </head>
 
 <body>
@@ -78,13 +80,18 @@
                 </div>
                 <!-- Nav Starts -->
                 <div class="navbar-collapse  collapse" >
+
                     <ul class="nav navbar-nav navbar-right">
+
                         <li
                             class="fb-like"
                             data-share="true"
                             data-width="450"
                             data-show-faces="true">
                         </li>
+
+                        <li style="float:right;"><!--<a href="/admin">Admin Panel</a></li> -->
+
                         <li class="active"><a href="/index">Home</a></li>
                         <li><a href="/aboutus">About</a></li>
                         <li><a href="/agents">Agents</a></li>         
@@ -93,7 +100,9 @@
                         <li><a href="/contactus">Contact Us</a></li>
                         <div class="navbar-collapse  collapse" style="float:left">
                             {% if user %}
-                                <span style="color: yellow">  Welcome{{user.firstName}} ({{ user.email }})</span><a href="/logout"><br>Logout</a>
+
+                                <span style="color: yellow">  Welcome {{user.name}} ({{ user.email }})</span><a href="/logout"><br>Logout</a>
+
                                 {% endif %}
                         </div>
                     </ul>
@@ -111,7 +120,7 @@
             <a href="/index"><img  src="/images/logo2.png" height="100" width="300" alt="Realestate"></a>
 
             <ul class="pull-right">
-                
+
                 <li><a href="/image/add">Add images</a></li>
                 <li><a href="/house/add">Add a Property</a></li>
                 <li><a href="/user/house">Edit | Remove a Property</a></li>

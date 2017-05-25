@@ -57,6 +57,16 @@ if (!isset($_SESSION['user'])) {
 $twig = $app->view()->getEnvironment();
 $twig->addGlobal('user', $_SESSION['user']);
 
+////============================
+//******* Admin PAGE *********
+$app->get('/admin', function() use ($app) {
+
+    $app->render("admin_menu.html.twig");
+});
+
+
+
+
 //============================
 //******* INDEX PAGE *********
 $app->get('/', function() use ($app) {
@@ -262,14 +272,25 @@ $app->get('/propertydetail/:id', function($id) use ($app) {
 //=================================================
 //******* Users house List to Edit and Delete******
 
+
+
 $app->get('/user/house', function() use ($app) {
-    //user can only modify their home
+   
+
     if (!$_SESSION['user']) {
         $app->render('first_login.html.twig');
         return;
     }
 
+
     $houseList = DB::query("SELECT * FROM houses");
+
+     // FIX ME: user can list/update/delete their home
+    $houseList = DB::query("SELECT *"
+                    . "FROM houses INNER JOIN users ON "
+                    . "houses.ownerId = users.id");
+                  //  . "WHERE ownerId=id");
+
     $HouseListWithImage = array();
     foreach ($houseList as $h) {
         $houseId = $h['id'];
@@ -281,6 +302,7 @@ $app->get('/user/house', function() use ($app) {
         'houseList' => $HouseListWithImage
     ));
 });
+
 
 //=============================
 //******* HOUSE LIST &SEARCH*********
@@ -387,6 +409,7 @@ $app->get('/house/delete/:id', function($id) use ($app) {
             'i' => $image
         ));
     }
+
 });
 
 $app->post('/house/delete/:id', function($id = 0) use ($app) {
@@ -441,12 +464,15 @@ $app->get('/house/:op(/:id)', function($op, $id = 0) use ($app) {
     'id' => '[0-9]+'));
 
 $app->post('/house/:op(/:id)', function($op, $id = 0) use ($app) {
+
     if (!$_SESSION['user']) {
         $app->render('first_login.html.twig');
         return;
     }
     $ownerId = $_SESSION['user']['id'];
+
     $owner = $_SESSION['user']['name'];
+
     $postalcode = $app->request()->post('postCode');
     $address = $app->request()->post('address');
     $city = $app->request()->post('city');
@@ -495,6 +521,139 @@ $app->post('/house/:op(/:id)', function($op, $id = 0) use ($app) {
     if (empty($area) || $area < 1 || $area > 1000000) {
         array_push($errorList, "area must be between 1 and 1000000");
     }
+
+    $imageList = $_FILES['image[]'];
+
+
+    if ($errorList) {
+        $app->render("add_property.html.twig", array(
+            'v' => $valueList,
+            "errorList" => $errorList,
+            'operation' => ($op == 'edit' ? 'ADD' : 'Update')
+        ));
+    } else {
+        if ($op == 'edit') {
+            DB::update('houses', $valueList, 'houseId=%i', $id);
+            $oldImagePath = DB::query('SELECT * FROM imagepaths WHERE houseId=%i', $id);
+//  $oldImageCounts = count($oldImagePath);
+//  $newImageCounts = count($imageList);
+//  if ($oldImageCounts >= $newImageCounts)
+            $c = 0;
+            foreach ($imageList as $image) {
+                $imagePath = "uploads/" . $image['name'];
+                $mimeType = mime_content_type($image["tmp_name"]);
+                move_uploaded_file($image["tmp_name"], $imagePath);
+                $houseId = $oldImagePath[$c] . ['id'];
+                DB::update('imagePaths', array(
+                    'imagePath' => $imagePath,
+                    'imageMimeType' => $mimeType), "houseId=%i", $houseId);
+                $c++;
+            }
+        } else {
+            DB::insert('houses', $valueList);
+            $houseId = DB::insertId();
+            foreach ($imageList as $image) {
+                $mimeType = mime_content_type($image["tmp_name"]);
+                $imagePath = "uploads/" . $image['name'];
+                move_uploaded_file($image["tmp_name"], $imagePath);
+                DB::insert('imagePaths', array(
+                    'houseId' => $houseId,
+                    'imagePath' => $imagePath,
+                    'imageMimeType' => $mimeType
+                ));
+            }
+            $app->render("property_add_success.html.twig");
+        }
+    }
+})->conditions(array('op' => '(add|edit)', 'id' => '[0-9]+'));
+
+
+$app->get('/image/:op(/:id)', function($op, $id = 0) use ($app) {
+    if (!$_SESSION['user']) {
+        $app->render('first_login.html.twig');
+        return;
+    }
+//$userId = $_SESSION['user']['id'];
+    if ($op == 'edit') {
+        $properties = DB::queryFirstRow("SELECT * FROM houses WHERE id=%i", $id);
+//not working how to  update images?
+        $images = DB::queryFirstRow("SELECT imagePath,imageMimeType FROM imagePaths WHERE houseId=%i", $id);
+        if (!$properties) {
+            echo 'Property not found';
+            return;
+        }
+        $app->render("add_property.html.twig", array(
+            'v' => $properties, 'operation' => 'Update'
+        ));
+    } else {
+        $app->render("add_image.html.twig", array('operation' => 'Add'
+        ));
+    }
+})->conditions(array(
+    'op' => '(add|edit)',
+    'id' => '[0-9]+'));
+
+$app->post('/image/:op(/:id)', function($op, $id = 0) use ($app) {
+
+    if (!$_SESSION['user']) {
+        $app->render('first_login.html.twig');
+        return;
+    }
+    $ownerId = $_SESSION['user']['id'];
+    $owner = $app->request()->post('owner');
+    $postalcode = $app->request()->post('postCode');
+    $address = $app->request()->post('address');
+    $city = $app->request()->post('city');
+    $phoneNumber = $app->request()->post('phoneNumber');
+    $numberOfBedroom = $app->request()->post('numberOfBedroom');
+    $price = $app->request()->post('price');
+    $year = $app->request()->post('year');
+    $propertyType = $app->request()->post('propertyType');
+    $area = $app->request()->post('area');
+    $status = $app->request()->post('status');
+    $description = $app->request()->post('description');
+
+    $valueList = array('ownerId' => $ownerId,
+        'postCode' => $postalcode, 'address' => $address,
+        'city' => $city, 'phoneNumber' => $phoneNumber,
+        'numberOfBedroom' => $numberOfBedroom, 'price' => $price, 'yearOfBuild' => $year,
+        'propertyType' => $propertyType, 'area' => $area, 'status' => $status,
+        'description' => $description
+    );
+
+    $errorList = array();
+    if (strlen($address) < 2 || strlen($address) > 300) {
+        array_push($errorList, "Address must be 2-300 characters long");
+    }
+    $expression = '/^([a-zA-Z]\d[a-zA-Z])\ {0,1}(\d[a-zA-Z]\d)$/';
+    $valid = (bool) preg_match($expression, $postalcode);
+    if (!$valid) {
+        array_push($errorList, "postal code is invalid!");
+    }
+    if (strlen($city) < 2 || strlen($city) > 300) {
+        array_push($errorList, "Address must be 2-300 characters long");
+    }
+    $valid = (bool) preg_match("/^[0-9]{3}-[0-9]{3}-[0-9]{4}$/", $phoneNumber);
+    if (!$valid) {
+        array_push($errorList, "phone number is invalid  => 000-000-0000!");
+    }
+    if (empty($price) || $price < 0 || $price > 9999999) {
+        array_push($errorList, "Price must be between 0 and 9999999");
+    }
+//if (empty($numberofbedroom) ||  || $numberofbedroom > 100) {
+    if (empty($numberOfBedroom) || $numberOfBedroom > 100 || $numberOfBedroom < 1) {
+        array_push($errorList, "bedrooms must be between 1 and 100");
+    }
+    if (empty($year) || $year < 1000 || $year > 2020) {
+        array_push($errorList, "Building Year must be between 1000 and 2020");
+    }
+    if (empty($area) || $area < 1 || $area > 1000000) {
+        array_push($errorList, "area must be between 1 and 1000000");
+    }
+
+    $imageList = $_FILES['image[]'];
+
+
     if ($errorList) {
         $app->render("add_property.html.twig", array(
             'v' => $valueList,
@@ -504,8 +663,10 @@ $app->post('/house/:op(/:id)', function($op, $id = 0) use ($app) {
         ));
     } else {
         if ($op == 'edit') {
+
             DB::update('houses', $valueList, 'Id=%i', $id);
             $_SESSION['user']['houseId'] = $id;
+
         } else {
             DB::insert('houses', $valueList);
             $_SESSION['user']['houseId'] = DB::insertId();
@@ -682,7 +843,6 @@ $app->get('/agents', function() use ($app) {
 });
 
 
-//========================
 //******* about us *********
 
 $app->get('/aboutus', function() use ($app) {
@@ -691,7 +851,7 @@ $app->get('/aboutus', function() use ($app) {
 });
 
 
-//========================
+        
 //******* contact us *********
 $app->get('/contactus', function() use ($app) {
 
@@ -744,6 +904,7 @@ $app->post('/contactus', function() use ($app) {
 
 
 
+
 //
     if ($errorList) {
         $app->render('contactus.html.twig', array(
@@ -759,9 +920,14 @@ $app->post('/contactus', function() use ($app) {
             'userId' => $userId
         ));
 
+
         $app->render('contactus_success.html.twig');
     }
 });
+
+
+
+
 
 //================================
 //******* Password Reset *********

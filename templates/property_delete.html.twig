@@ -11,12 +11,14 @@
             <input  type="submit" class="btn btn-danger" value="Cancel">
         </form>
         <form style="display: inline-block" method="post">
+
             <input type="hidden" name="delete" value="confirmed">
             <input type="submit" class="btn btn-warning" value="Delete">
         </form>
 
         <p style="margin-top: 50px;font-size: 20px;">located in {{h.city}}, nuilt in {{h.yearOfBuild}} priced at {{h.Price}}
         </p>
+
     </div> 
 {% endblock %}
 

@@ -4,7 +4,9 @@
 
 {% block content %}
 
+
  {% if errorList %}
+
         <ul class="errorList">
             {% for error in errorList %}
                 <li>{{ error }}</li>
@@ -35,7 +37,11 @@
                                     <!--add multiple images not working-->
 
                                     <form method="post" enctype="multipart/form-data">
+<<<<<<< HEAD
                                         <input type="file" name="image" multiple>
+=======
+                                        <input type="file" name="my_file" multiple>
+>>>>>>> 1f087ffadf9648c2823860341255ee7cafd6c1f7
                                         <img width="300" id="myImg" src="#" alt="your image" />
                                         <script>
                                             $(function () {
