@@ -215,13 +215,13 @@ $app->get('/login', function() use ($app, $log) {
     $app->render('login.html.twig');
 });
 
-$app->post('/login', function() use ($app) {
+$app->post('/login', function() use ($app, $log) {
 //if the user allready loggedin has to logget out first then login with the other user!!!
 //is it correct?
-    /* if ($_SESSION['user']) {
-      $app->render('logout.html.twig');
-      return;
-      } */
+    if ($_SESSION['user']) {
+        $app->render('logout.html.twig');
+        return;
+    }
 
     $email = $app->request()->post('email');
     $pass = $app->request()->post('password');
@@ -229,16 +229,16 @@ $app->post('/login', function() use ($app) {
     $error = false;
     $user = DB::queryFirstRow("SELECT * FROM users WHERE email=%s", $email);
     if (!$user) {
-//  $log->debug(sprintf("User failed for email %s from IP %s", $email, $_SERVER['REMOTE_ADDR']));
+        $log->debug(sprintf("User failed for email %s from IP %s", $email, $_SERVER['REMOTE_ADDR']));
         $error = true;
     } else {
         if ($user['password'] != $pass) {
-//    $log->debug(sprintf("User failed for email %s from IP %s", $email, $_SERVER['REMOTE_ADDR']));
+    $log->debug(sprintf("User failed for email %s from IP %s", $email, $_SERVER['REMOTE_ADDR']));
             $error = true;
         }
     }
     if ($error) {
-//  $log->debug(sprintf("User failed for email %s from IP %s", $email, $_SERVER['REMOTE_ADDR']));
+  $log->debug(sprintf("User failed for email %s from IP %s", $email, $_SERVER['REMOTE_ADDR']));
         $app->render('login.html.twig', array("error" => true));
 
 //
@@ -269,12 +269,14 @@ $app->get('/propertydetail/:id', function($id) use ($app) {
 
 
 $app->get('/user/house', function() use ($app) {
-   
+
+
 
     if (!$_SESSION['user']) {
         $app->render('first_login.html.twig');
         return;
     }
+
 
 
     $houseList = DB::query("SELECT * FROM houses");
@@ -284,6 +286,7 @@ $app->get('/user/house', function() use ($app) {
                     . "FROM houses INNER JOIN users ON "
                     . "houses.ownerId = users.id");
                   //  . "WHERE ownerId=id");
+
 
     $HouseListWithImage = array();
     foreach ($houseList as $h) {
@@ -299,7 +302,7 @@ $app->get('/user/house', function() use ($app) {
 
 
 //=============================
-//******* HOUSE LIST &SEARCH*********
+//******* HOUSE LIST & SEARCH*********
 
 $app->get('/house/list', function() use ($app) {
     $houseList = DB::query("SELECT * FROM houses");
@@ -980,6 +983,10 @@ $app->map('/passreset', function () use ($app, $log) {
     }
 })->via('GET', 'POST');
 
+function debug_sql_handler($params) {
+    global $log;
+    $log->debug("SQL Command: " . $params['query']);
+}
 
 $app->map('/passreset/:secretToken', function($secretToken) use ($app) {
     $row = DB::queryFirstRow("SELECT * FROM passresets WHERE secretToken=%s", $secretToken);
@@ -1019,6 +1026,7 @@ $app->map('/passreset/:secretToken', function($secretToken) use ($app) {
             ));
         } else {
 // success - reset the password
+            DB::debugMode('debug_sql_handler');
             DB::update('users', array(
                 //mr mike this part cannot update the current password????!!!!
                 'password' => password_hash($pass1, CRYPT_BLOWFISH)
@@ -1028,10 +1036,6 @@ $app->map('/passreset/:secretToken', function($secretToken) use ($app) {
         }
     }
 })->via('GET', 'POST');
-
-
-
-
 
 
 $app->run();
