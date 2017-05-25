@@ -4,14 +4,19 @@
 
 {% block content %}
     <div style="text-align: center; ">
+        <img src="/{{i.imagePath}}" width="300">
         <p style="font-size: 20px;margin-top: 50px;"> Are you sure you want to delete this House?</p>
-        <form style="display: inline-block" action="/list">
-            <input  type="submit" class="btn btn-danger" value="Cancel"></form>
+
+        <form style="display: inline-block" action="/user/house">
+            <input  type="submit" class="btn btn-danger" value="Cancel">
+        </form>
         <form style="display: inline-block" method="post">
             <input type="hidden" name="delete" value="confirmed">
-            <input type="submit" class="btn btn-warning" value="Delete"></form>
-        <p style="margin-top: 50px;font-size: 20px;">{{h.city}} , {{h.yearOfBuild}} priced at {{h.Price}}
-            <img src="/{{i.imagePath}}" width="200"></p>
+            <input type="submit" class="btn btn-warning" value="Delete">
+        </form>
+
+        <p style="margin-top: 50px;font-size: 20px;">located in {{h.city}}, nuilt in {{h.yearOfBuild}} priced at {{h.Price}}
+        </p>
     </div> 
 {% endblock %}
 

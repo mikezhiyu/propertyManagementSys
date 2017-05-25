@@ -2,7 +2,7 @@
 
 DB::$user = 'root';
 DB::$password = "";
-DB::$dbName = 'properysalesys';
-DB::$port = 3307;
+DB::$dbName = 'propertysalesys';
+DB::$port = 3333;
 
 
