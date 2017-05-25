@@ -7,9 +7,6 @@ require_once 'vendor/autoload.php';
 require_once 'local.php';
 
 //require_once 'facebook.php';
-
-
-
 use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
 
@@ -63,9 +60,6 @@ $app->get('/admin', function() use ($app) {
 
     $app->render("admin_menu.html.twig");
 });
-
-
-
 
 //============================
 //******* INDEX PAGE *********
