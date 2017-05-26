@@ -133,24 +133,24 @@ $app->post('/admin/user/:op(/:id)', function($op, $id = 0) use ($app) {
             array_push($errorList, "Email already in use");
         }
     }
-    if (strlen($firstname) < 2 || strlen($firstname) > 50 ) {
+    if (strlen($firstname) < 2 || strlen($firstname) > 50) {
         array_push($errorList, "First Name too short or empty, must be 2 characters or longer");
     }
     if (strlen($lastname) < 2 || strlen($lastname) > 50) {
         array_push($errorList, "Last Name too short or empty, must be 2 characters or longer");
     }
 
-   /* if ($pass1 != $pass2) {
-        array_push($errorList, "Passwords do not match");
-    } else {
-        if (strlen($pass1) < 6) {
-            array_push($errorList, "Password too short, must be 6 characters or longer");
-        }
-        if (preg_match('/[A-Z]/', $pass1) != 1 || preg_match('/[a-z]/', $pass1) != 1 || preg_match('/[0-9]/', $pass1) != 1) {
-            array_push($errorList, "Password must contain at least one lowercase, "
-                    . "one uppercase letter, and a digit");
-        }
-    }*/
+    /* if ($pass1 != $pass2) {
+      array_push($errorList, "Passwords do not match");
+      } else {
+      if (strlen($pass1) < 6) {
+      array_push($errorList, "Password too short, must be 6 characters or longer");
+      }
+      if (preg_match('/[A-Z]/', $pass1) != 1 || preg_match('/[a-z]/', $pass1) != 1 || preg_match('/[0-9]/', $pass1) != 1) {
+      array_push($errorList, "Password must contain at least one lowercase, "
+      . "one uppercase letter, and a digit");
+      }
+      } */
 
     //
     if ($errorList) {
@@ -324,7 +324,7 @@ $app->post('/register', function() use ($app, $log) {
             'password' => password_hash($pass1, CRYPT_BLOWFISH),
             'name' => $lastname
         ));
-        $log->debug(sprintf("User %s created", $id));
+        $log->debug(sprintf("User %s created"));
         $app->render('register_success.html.twig');
     }
 });
@@ -375,7 +375,7 @@ $app->post('/login', function() use ($app, $log) {
         unset($user['password']);
         $_SESSION['user'] = $user;
 
-// $log->debug(sprintf("User failed for email %s from IP %s", $user['id'], $_SERVER['REMOTE_ADDR']));
+        $log->debug(sprintf("User failed for email %s from IP %s", $user['id'], $_SERVER['REMOTE_ADDR']));
         $app->render('login_success.html.twig');
     }
 });
@@ -545,7 +545,6 @@ $app->get('/house/delete/:id', function($id) use ($app) {
             'i' => $image
         ));
     }
-
 });
 
 $app->post('/house/delete/:id', function($id = 0) use ($app) {
@@ -570,39 +569,39 @@ $app->post('/house/delete/:id', function($id = 0) use ($app) {
 //=====================================================
 //******* UPDATE UPLOADED HOUSE Or ADD A PROPERTY *****
 
-/*$app->get('/house/:op(/:id)', function($op, $id = 0) use ($app) {
-    if (!$_SESSION['user']) {
-        $app->render('first_login.html.twig');
-        return;
-    }
-    $ownerId = $_SESSION['user']['id'];
+/* $app->get('/house/:op(/:id)', function($op, $id = 0) use ($app) {
+  if (!$_SESSION['user']) {
+  $app->render('first_login.html.twig');
+  return;
+  }
+  $ownerId = $_SESSION['user']['id'];
 
-    if ($op == 'edit') {
-        $properties = DB::queryFirstRow("SELECT * FROM houses WHERE id=%i", $id);
-        //  $images = DB::queryFirstRow("SELECT imagePath,imageMimeType FROM imagePaths WHERE houseId=%i", $id);
-        if (!$properties) {
-            echo 'Property not found';
-            return;
-        }
-        $properties['name'] = $_SESSION['user']['name'];
-        $app->render("add_property.html.twig", array(
-            'v' => $properties, 'operation' => 'Update'));
+  if ($op == 'edit') {
+  $properties = DB::queryFirstRow("SELECT * FROM houses WHERE id=%i", $id);
+  //  $images = DB::queryFirstRow("SELECT imagePath,imageMimeType FROM imagePaths WHERE houseId=%i", $id);
+  if (!$properties) {
+  echo 'Property not found';
+  return;
+  }
+  $properties['name'] = $_SESSION['user']['name'];
+  $app->render("add_property.html.twig", array(
+  'v' => $properties, 'operation' => 'Update'));
 
 
-    if (($_SESSION['user']['level']) == 0) {
-        $app->render("add_property.html.twig", array('v' => $_SESSION['user'], 'operation' => 'Add'
+  if (($_SESSION['user']['level']) == 0) {
+  $app->render("add_property.html.twig", array('v' => $_SESSION['user'], 'operation' => 'Add'
 
-        ));
-        return;
-    } else {
+  ));
+  return;
+  } else {
 
-        $app->render("add_property.html.twig", array('v' => $_SESSION['user'], 'operation' => 'Add'
-        ));
+  $app->render("add_property.html.twig", array('v' => $_SESSION['user'], 'operation' => 'Add'
+  ));
 
-    }
-})->conditions(array(
-    'op' => '(add|edit)',
-    'id' => '[0-9]+'));*/
+  }
+  })->conditions(array(
+  'op' => '(add|edit)',
+  'id' => '[0-9]+')); */
 
 $app->post('/house/:op(/:id)', function($op, $id = 0) use ($app) {
     if (!$_SESSION['user']) {
@@ -716,7 +715,7 @@ $app->get('/image/edit/:id', function( $id = 0) use ($app) {
 
     $imagePath = DB::query("SELECT imagePath FROM imagepaths WHERE houseid=%i", $id);
     $app->render('edit_image.html.twig', array(
-    'images' => $imagePath));
+        'images' => $imagePath));
 });
 
 /*
@@ -771,85 +770,85 @@ $app->get('/image/edit/:id', function( $id = 0) use ($app) {
 
  */
 
-/*$app->post('/image/add', function() use ($app) {
+/* $app->post('/image/add', function() use ($app) {
 
 
-    if (!$_SESSION['user']) {
-        $app->render('first_login.html.twig');
-        return;
-    }
-    $ownerId = $_SESSION['user']['id'];
-    $houseId = $_SESSION['user']['houseId'];
-    $image = $_FILES['image'];
-    $errorList = array();
-    if ($image['error'] != 0) {
-        array_push($errorList, "Image is required to create a house");
-    } else {
-        $imageInfo = getimagesize($image["tmp_name"]);
-        if (!$imageInfo) {
-            array_push($errorList, "File does not look like an valid image");
-        } else {
-// FIXME: opened a security hole here! .. must be forbidden
-            if (strstr($image["name"], "..")) {
-                array_push($errorList, "File name invalid");
-            }
-// FIXME: only allow select extensions .jpg .gif .png, never .php
-            $ext = strtolower(pathinfo($image['name'], PATHINFO_EXTENSION));
-            if (!in_array($ext, array('jpg', 'jpeg', 'gif', 'png'))) {
-                array_push($errorList, "File name invalid");
-            }
-// FIXME: do not allow file to override an previous upload
-            if (file_exists('uploads/' . $image['name'])) {
-                array_push($errorList, "File name already exists. Will not override.");
-            }
+  if (!$_SESSION['user']) {
+  $app->render('first_login.html.twig');
+  return;
+  }
+  $ownerId = $_SESSION['user']['id'];
+  $houseId = $_SESSION['user']['houseId'];
+  $image = $_FILES['image'];
+  $errorList = array();
+  if ($image['error'] != 0) {
+  array_push($errorList, "Image is required to create a house");
+  } else {
+  $imageInfo = getimagesize($image["tmp_name"]);
+  if (!$imageInfo) {
+  array_push($errorList, "File does not look like an valid image");
+  } else {
+  // FIXME: opened a security hole here! .. must be forbidden
+  if (strstr($image["name"], "..")) {
+  array_push($errorList, "File name invalid");
+  }
+  // FIXME: only allow select extensions .jpg .gif .png, never .php
+  $ext = strtolower(pathinfo($image['name'], PATHINFO_EXTENSION));
+  if (!in_array($ext, array('jpg', 'jpeg', 'gif', 'png'))) {
+  array_push($errorList, "File name invalid");
+  }
+  // FIXME: do not allow file to override an previous upload
+  if (file_exists('uploads/' . $image['name'])) {
+  array_push($errorList, "File name already exists. Will not override.");
+  }
 
-    if ($errorList) {
-        $app->render("add_property.html.twig", array(
-            'v' => $valueList,
-            "errorList" => $errorList,
-            'operation' => ($op == 'edit' ? 'Add' : 'Update'),
-            'v' => $_SESSION['user']
-        ));
-    } else {
-        if ($op == 'edit') {
+  if ($errorList) {
+  $app->render("add_property.html.twig", array(
+  'v' => $valueList,
+  "errorList" => $errorList,
+  'operation' => ($op == 'edit' ? 'Add' : 'Update'),
+  'v' => $_SESSION['user']
+  ));
+  } else {
+  if ($op == 'edit') {
 
-            DB::update('houses', $valueList, 'Id=%i', $id);
-            $_SESSION['user']['houseId'] = $id;
-        } else {
-            DB::insert('houses', $valueList);
-            $_SESSION['user']['houseId'] = DB::insertId();
+  DB::update('houses', $valueList, 'Id=%i', $id);
+  $_SESSION['user']['houseId'] = $id;
+  } else {
+  DB::insert('houses', $valueList);
+  $_SESSION['user']['houseId'] = DB::insertId();
 
-        }
-        $_SESSION['user']['level'] = 1;
-        DB::update('users', $_SESSION['user'], 'Id=%i', $_SESSION['user']['id']);
-        $app->render("add_property_success.html.twig");
-    }
+  }
+  $_SESSION['user']['level'] = 1;
+  DB::update('users', $_SESSION['user'], 'Id=%i', $_SESSION['user']['id']);
+  $app->render("add_property_success.html.twig");
+  }
 
-})->conditions(array('op' => '(add|edit)', 'id' => '[0-9]+'));
+  })->conditions(array('op' => '(add|edit)', 'id' => '[0-9]+'));
 
 
-$app->get('/image/:add(/:id)', function($op, $id = 0) use ($app) {
-    if (!$_SESSION['user']) {
-        $app->render('first_login.html.twig');
-        return;
-    }
-    $ownerId = $_SESSION['user']['id'];
-    if ($op == 'edit') {
-        $properties = DB::query("SELECT * FROM houses WHERE ownerId=%i", $ownerId);
-        if (!$properties) {
-            echo 'You have no Property in our Database';
-            return;
-        }
-        // $images = DB::query("SELECT imagePath FROM imagePaths WHERE houseId=%i", $id);
-        $app->render("add_image.html.twig", array(
-            'v' => $properties, 'operation' => 'Update'
-        ));
-    } else {
-        $app->render("add_image.html.twig", array('operation' => 'Add'
-        ));
-    }
-})->conditions(array(
-    'op' => '(add|edit)', 'id' => '[0-9]+'));*/
+  $app->get('/image/:add(/:id)', function($op, $id = 0) use ($app) {
+  if (!$_SESSION['user']) {
+  $app->render('first_login.html.twig');
+  return;
+  }
+  $ownerId = $_SESSION['user']['id'];
+  if ($op == 'edit') {
+  $properties = DB::query("SELECT * FROM houses WHERE ownerId=%i", $ownerId);
+  if (!$properties) {
+  echo 'You have no Property in our Database';
+  return;
+  }
+  // $images = DB::query("SELECT imagePath FROM imagePaths WHERE houseId=%i", $id);
+  $app->render("add_image.html.twig", array(
+  'v' => $properties, 'operation' => 'Update'
+  ));
+  } else {
+  $app->render("add_image.html.twig", array('operation' => 'Add'
+  ));
+  }
+  })->conditions(array(
+  'op' => '(add|edit)', 'id' => '[0-9]+')); */
 
 
 $app->get('/image/edit/:id', function( $id = 0) use ($app) {
