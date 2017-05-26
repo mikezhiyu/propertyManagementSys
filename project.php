@@ -7,6 +7,7 @@ require_once 'vendor/autoload.php';
 require_once 'local.php';
 
 //require_once 'facebook.php';
+
 use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
 
@@ -300,19 +301,14 @@ $app->post('/register', function() use ($app, $log) {
         array_push($errorList, "Last Name too short or empty, must be 2 characters or longer");
     }
 
-    if ($pass1 != $pass2) {
-        array_push($errorList, "Passwords do not match");
-    } else {
-        if (strlen($pass1) < 6) {
-            array_push($errorList, "Password too short, must be 6 characters or longer");
-        }
-        if (preg_match('/[A-Z]/', $pass1) != 1 || preg_match('/[a-z]/', $pass1) != 1 || preg_match('/[0-9]/', $pass1) != 1) {
-            array_push($errorList, "Password must contain at least one lowercase, "
-                    . "one uppercase letter, and a digit");
-        }
+    $msg = verifyPassword($pass1);
+    if ($msg !== TRUE) {
+        array_push($errorList, $msg);
+    } else if ($pass1 != $pass2) {
+        array_push($errorList, "Passwords don't match");
     }
-
-//
+    //
+    //
     if ($errorList) {
         $app->render('register.html.twig', array(
             'errorList' => $errorList,
@@ -324,7 +320,8 @@ $app->post('/register', function() use ($app, $log) {
             'password' => password_hash($pass1, CRYPT_BLOWFISH),
             'name' => $lastname
         ));
-        $log->debug(sprintf("User %s created"));
+        $id = DB::insertId();
+        $log->debug(sprintf("User %s created", $id));
         $app->render('register_success.html.twig');
     }
 });
@@ -338,47 +335,63 @@ $app->get('/ajax/emailused/:email', function($email) {
 
 //=======================
 //******* Login *********
-//
-//have to ask teache why when I have log it doesnot work on the server?
+
 $app->get('/login', function() use ($app, $log) {
     $app->render('login.html.twig');
 });
 
 $app->post('/login', function() use ($app, $log) {
-//if the user allready loggedin has to logget out first then login with the other user!!!
-//is it correct?
-    if ($_SESSION['user']) {
-        $app->render('logout.html.twig');
-        return;
-    }
 
-    $email = $app->request()->post('email');
-    $pass = $app->request()->post('password');
-// verification    
-    $error = false;
+
+    /* $email = $app->request()->post('email');
+      $pass = $app->request()->post('password');
+      // verification
+      $error = false;
+      $user = DB::queryFirstRow("SELECT * FROM users WHERE email=%s", $email);
+      if (!$user) {
+      $log->debug(sprintf("User failed for email %s from IP %s", $email, $_SERVER['REMOTE_ADDR']));
+      $error = true;
+      } else {
+      if ($user['password'] != $pass) {
+      $log->debug(sprintf("User failed for email %s from IP %s", $email, $_SERVER['REMOTE_ADDR']));
+      $error = true;
+      }
+      }
+      if ($error) {
+      $log->debug(sprintf("User failed for email %s from IP %s", $email, $_SERVER['REMOTE_ADDR']));
+      $app->render('login.html.twig', array("error" => true));
+
+      //
+      } else {
+      unset($user['password']);
+      $_SESSION['user'] = $user;
+
+      $log->debug(sprintf("User failed for email %s from IP %s", $user['id'], $_SERVER['REMOTE_ADDR']));
+
+      $app->render('login_success.html.twig');
+      } */
+
+    $email = $app->request->post('email');
+    $pass = $app->request->post('password');
     $user = DB::queryFirstRow("SELECT * FROM users WHERE email=%s", $email);
     if (!$user) {
         $log->debug(sprintf("User failed for email %s from IP %s", $email, $_SERVER['REMOTE_ADDR']));
-        $error = true;
+        $app->render('login.html.twig', array('loginFailed' => TRUE));
     } else {
-        //$userInputPassword = password_hash($user['password'], CRYPT_BLOWFISH);
-        if ($user['password'] != $pass) {
+
+        // password MUST be compared in PHP because SQL is case-insenstive
+        //if ($user['password'] == hash('sha256', $pass)) {
+        if (password_verify($pass, $user['password'])) {
+            // LOGIN successful
+            unset($user['password']);
+            $_SESSION['user'] = $user;
+            $log->debug(sprintf("User %s logged in successfuly from IP %s", $user['id'], $_SERVER['REMOTE_ADDR']));
+            $app->render('login_success.html.twig');
+        } else {
+
             $log->debug(sprintf("User failed for email %s from IP %s", $email, $_SERVER['REMOTE_ADDR']));
-            $error = true;
+            $app->render('login.html.twig', array('loginFailed' => TRUE));
         }
-    }
-    if ($error) {
-        $log->debug(sprintf("User failed for email %s from IP %s", $email, $_SERVER['REMOTE_ADDR']));
-        $app->render('login.html.twig', array("error" => true));
-
-//
-    } else {
-        unset($user['password']);
-        $_SESSION['user'] = $user;
-
-        $log->debug(sprintf("User failed for email %s from IP %s", $user['id'], $_SERVER['REMOTE_ADDR']));
-
-        $app->render('login_success.html.twig');
     }
 });
 
@@ -996,7 +1009,17 @@ $app->map('/passreset', function () use ($app, $log) {
 
 function debug_sql_handler($params) {
     global $log;
+
     $log->debug("SQL Command: " . $params['query']);
+}
+
+function verifyPassword($pass1) {
+    if (!preg_match('/[0-9;\'".,<>`~|!@#$%^&*()_+=-]/', $pass1) || (!preg_match('/[a-z]/', $pass1)) || (!preg_match('/[A-Z]/', $pass1)) || (strlen($pass1) < 8)) {
+        return "Password must be at least 8 characters " .
+                "long, contain at least one upper case, one lower case, " .
+                " one digit or special character";
+    }
+    return TRUE;
 }
 
 $app->map('/passreset/:secretToken', function($secretToken) use ($app) {
@@ -1018,18 +1041,13 @@ $app->map('/passreset/:secretToken', function($secretToken) use ($app) {
 // TODO: verify password quality and that pass1 matches pass2
         $errorList = array();
 
-        if ($pass1 != $pass2) {
-            array_push($errorList, "Passwords do not match");
-        } else {
-            if (strlen($pass1) < 6) {
-                array_push($errorList, "Password too short, must be 6 characters or longer");
-            }
-            if (preg_match('/[A-Z]/', $pass1) != 1 || preg_match('/[a-z]/', $pass1) != 1 || preg_match('/[0-9]/', $pass1) != 1) {
-                array_push($errorList, "Password must contain at least one lowercase, "
-                        . "one uppercase letter, and a digit");
-            }
-        }
 
+        $msg = verifyPassword($pass1);
+        if ($msg !== TRUE) {
+            array_push($errorList, $msg);
+        } else if ($pass1 != $pass2) {
+            array_push($errorList, "Passwords don't match");
+        }
 //
         if ($errorList) {
             $app->render('passreset_form.html.twig', array(
