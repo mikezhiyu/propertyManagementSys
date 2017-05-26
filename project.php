@@ -6,7 +6,7 @@ session_start();
 require_once 'vendor/autoload.php';
 require_once 'local.php';
 
-//require_once 'facebook.php';
+require_once 'facebook.php';
 use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
 
@@ -324,7 +324,8 @@ $app->post('/register', function() use ($app, $log) {
             'password' => password_hash($pass1, CRYPT_BLOWFISH),
             'name' => $lastname
         ));
-        $log->debug(sprintf("User %s created"));
+        $id = DB::insertId();
+        $log->debug(sprintf("User %s created", $id));
         $app->render('register_success.html.twig');
     }
 });
@@ -338,8 +339,7 @@ $app->get('/ajax/emailused/:email', function($email) {
 
 //=======================
 //******* Login *********
-//
-//have to ask teache why when I have log it doesnot work on the server?
+
 $app->get('/login', function() use ($app, $log) {
     $app->render('login.html.twig');
 });
@@ -347,10 +347,10 @@ $app->get('/login', function() use ($app, $log) {
 $app->post('/login', function() use ($app, $log) {
 //if the user allready loggedin has to logget out first then login with the other user!!!
 //is it correct?
-    if ($_SESSION['user']) {
-        $app->render('logout.html.twig');
-        return;
-    }
+    /* if ($_SESSION['user']) {
+      $app->render('logout.html.twig');
+      return;
+      } */
 
     $email = $app->request()->post('email');
     $pass = $app->request()->post('password');
@@ -664,7 +664,7 @@ $app->post('/house/:op(/:id)', function($op, $id = 0) use ($app) {
             'v' => $_SESSION['user']
         ));
     } else {
-        
+
         if ($op == 'edit') {
             DB::update('houses', $valueList, 'id=%i', $id);
             $_SESSION['user']['houseId'] = $id;
