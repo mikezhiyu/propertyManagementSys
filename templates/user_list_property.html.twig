@@ -91,7 +91,7 @@
 
                 <div class="col-lg-9 col-sm-8">
                     <div class="sortby clearfix">
-                        <div class="pull-left result">Showing: 12 of 100 </div>
+                        <div class="pull-left result"><h4>You have following properties on List</h4></div>
                         <div class="pull-right">
                             <select class="form-control">
                                 <option>Sort by</option>
@@ -112,10 +112,9 @@
                                     <td> ${{h.Price}}   </td>
                                     <td>{{h.address}}    </td>
                                     <td>{{h.yearOfBuild}}</td>
-                                    <td><a href="/house/edit/{{h.id}}" value="">Edit<br> </a>
-
-                                        <a href="/image/edit/{{h.id}}" value="" >Image edit<br></a>
-                                        <a href="/house/delete/{{h.id}}" value="" >Delete </a>
+                                    <td><a href="/house/edit/{{h.id}}" value="">Information Update<br><br> </a>
+                                        <a href="/image/edit/{{h.id}}" value="" >Image Update<br><br></a>
+                                        <a href="/house/delete/{{h.id}}" value="" >Remove </a>
 
                                     </td>   
                                 </tr>
