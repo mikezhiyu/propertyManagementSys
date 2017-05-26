@@ -833,16 +833,11 @@ $app->get('/image/delete/:id', function( $id = 0) use ($app) {
     }
     $ownerId = $_SESSION['user']['id'];
     // $_SESSION['user']['houseId']= $id;
-    $path = DB::query("SELECT imagePath FROM imagepaths WHERE id=%i", $id);
+    $path = DB::queryFirstField("SELECT imagePath FROM imagepaths WHERE id=%i", $id);
     DB::delete('imagepaths', "id=%i", $id);
-    
-  //  print_r($path.imagePath);
-    //if (file_exists($path['imagePath'])) {
-  // unlink($path['imagePath']);
-    //}
+    print_r($path);
+    unlink($path);
     $imagePath = DB::query("SELECT imagePath, id FROM imagepaths WHERE houseid=%i", $_SESSION['user']['houseId']);
-
-
     $app->render('edit_image.html.twig', array(
         'images' => $imagePath));
 });
