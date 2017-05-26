@@ -30,40 +30,41 @@
 
 
                         <form id="signupform" class="form-horizontal" role="form" method="post" enctype="multipart/form-data">
-
-                            <div class="form-group">
-                                {% for i in images %}
-                                    <img src="/{{i.imagePath}}" />
-                                {% endfor %}
-                            </div>
-
-
-
-                            <label for="image" class="col-md-3 control-label">image files</label>
+                      
                             <div class="col-md-9" enctype="multipart/form-data">
-                                <!--add multiple images not working-->
-
+                                <label for="image" class="col-md-9 control-label"><h4>This property had image files</h4></label>
+                                <div class="form-group">
+                                    {% for i in images %}
+                                        <table> <tr> <td> <img width= "300" src="/{{i.imagePath}}"/>  </td>
+                                                  <td><a href="/image/edit/{{i.id}}">    Replace</a><br><br>
+                                                    <a href="/image/delete/{{i.id}}">    Delete</a><br><br>
+                                                </td>
+                                            </tr></table>
+                                        {% endfor %}
+                                </div>
+                                
                                 <form method="post" enctype="multipart/form-data">
-                                    <input type="file" name="image" multiple>
-                                    <img width="300" id="myImg" src="#" alt="your image" />
-                                    <script>
-                                        $(function () {
-                                            $(":file").change(function () {
-                                                if (this.files && this.files[0]) {
-                                                    var reader = new FileReader();
-                                                    reader.onload = imageIsLoaded;
-                                                    reader.readAsDataURL(this.files[0]);
-                                                }
+                                     <input type="file" name="file" multiple>
+
+                                        <img width="300" id="myImg" src="#" alt="your image" />
+                                        <script>
+                                            $(function () {
+                                                $(":file").change(function () {
+                                                    if (this.files && this.files[0]) {
+                                                        var reader = new FileReader();
+                                                        reader.onload = imageIsLoaded;
+                                                        reader.readAsDataURL(this.files[0]);
+                                                    }
+                                                });
                                             });
-                                        });
-                                        function imageIsLoaded(e) {
-                                            $('#myImg').attr('src', e.target.result);
-                                        }
-                                        ;
-                                    </script>
+                                            function imageIsLoaded(e) {
+                                                $('#myImg').attr('src', e.target.result);
+                                            }
+                                            ;
+                                        </script>
                                     <div class="form-group">          
                                         <div class="col-md-offset-3 col-md-9">
-                                            <br>  <input type="submit" value="{{operation}} Image">
+                                        <input type="submit"  value="Add Image">
                                         </div>
                                     </div>
                                 </form>

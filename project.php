@@ -7,6 +7,7 @@ require_once 'vendor/autoload.php';
 require_once 'local.php';
 
 //require_once 'facebook.php';
+
 use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
 
@@ -300,19 +301,14 @@ $app->post('/register', function() use ($app, $log) {
         array_push($errorList, "Last Name too short or empty, must be 2 characters or longer");
     }
 
-    if ($pass1 != $pass2) {
-        array_push($errorList, "Passwords do not match");
-    } else {
-        if (strlen($pass1) < 6) {
-            array_push($errorList, "Password too short, must be 6 characters or longer");
-        }
-        if (preg_match('/[A-Z]/', $pass1) != 1 || preg_match('/[a-z]/', $pass1) != 1 || preg_match('/[0-9]/', $pass1) != 1) {
-            array_push($errorList, "Password must contain at least one lowercase, "
-                    . "one uppercase letter, and a digit");
-        }
+    $msg = verifyPassword($pass1);
+    if ($msg !== TRUE) {
+        array_push($errorList, $msg);
+    } else if ($pass1 != $pass2) {
+        array_push($errorList, "Passwords don't match");
     }
-
-//
+    //
+    //
     if ($errorList) {
         $app->render('register.html.twig', array(
             'errorList' => $errorList,
@@ -324,7 +320,8 @@ $app->post('/register', function() use ($app, $log) {
             'password' => password_hash($pass1, CRYPT_BLOWFISH),
             'name' => $lastname
         ));
-       // $log->debug(sprintf("User %s created", $id));
+        $id = DB::insertId();
+        $log->debug(sprintf("User %s created", $id));
         $app->render('register_success.html.twig');
     }
 });
@@ -338,44 +335,63 @@ $app->get('/ajax/emailused/:email', function($email) {
 
 //=======================
 //******* Login *********
-//
-//have to ask teache why when I have log it doesnot work on the server?
+
 $app->get('/login', function() use ($app, $log) {
     $app->render('login.html.twig');
 });
 
 $app->post('/login', function() use ($app, $log) {
-//if the user allready loggedin has to logget out first then login with the other user!!!
-//is it correct?
-    if ($_SESSION['user']) {
-        $app->render('logout.html.twig');
-        return;
-    }
 
-    $email = $app->request()->post('email');
-    $pass = $app->request()->post('password');
-// verification    
-    $error = false;
+
+    /* $email = $app->request()->post('email');
+      $pass = $app->request()->post('password');
+      // verification
+      $error = false;
+      $user = DB::queryFirstRow("SELECT * FROM users WHERE email=%s", $email);
+      if (!$user) {
+      $log->debug(sprintf("User failed for email %s from IP %s", $email, $_SERVER['REMOTE_ADDR']));
+      $error = true;
+      } else {
+      if ($user['password'] != $pass) {
+      $log->debug(sprintf("User failed for email %s from IP %s", $email, $_SERVER['REMOTE_ADDR']));
+      $error = true;
+      }
+      }
+      if ($error) {
+      $log->debug(sprintf("User failed for email %s from IP %s", $email, $_SERVER['REMOTE_ADDR']));
+      $app->render('login.html.twig', array("error" => true));
+
+      //
+      } else {
+      unset($user['password']);
+      $_SESSION['user'] = $user;
+
+      $log->debug(sprintf("User failed for email %s from IP %s", $user['id'], $_SERVER['REMOTE_ADDR']));
+
+      $app->render('login_success.html.twig');
+      } */
+
+    $email = $app->request->post('email');
+    $pass = $app->request->post('password');
     $user = DB::queryFirstRow("SELECT * FROM users WHERE email=%s", $email);
     if (!$user) {
         $log->debug(sprintf("User failed for email %s from IP %s", $email, $_SERVER['REMOTE_ADDR']));
-        $error = true;
+        $app->render('login.html.twig', array('loginFailed' => TRUE));
     } else {
-        if ($user['password'] != $pass) {
-            $log->debug(sprintf("User failed for email %s from IP %s", $email, $_SERVER['REMOTE_ADDR']));
-            $error = true;
-        }
-    }
-    if ($error) {
-        $log->debug(sprintf("User failed for email %s from IP %s", $email, $_SERVER['REMOTE_ADDR']));
-        $app->render('login.html.twig', array("error" => true));
 
-//
-    } else {
-        unset($user['password']);
-        $_SESSION['user'] = $user;
-// $log->debug(sprintf("User failed for email %s from IP %s", $user['id'], $_SERVER['REMOTE_ADDR']));
-        $app->render('login_success.html.twig');
+        // password MUST be compared in PHP because SQL is case-insenstive
+        //if ($user['password'] == hash('sha256', $pass)) {
+        if (password_verify($pass, $user['password'])) {
+            // LOGIN successful
+            unset($user['password']);
+            $_SESSION['user'] = $user;
+            $log->debug(sprintf("User %s logged in successfuly from IP %s", $user['id'], $_SERVER['REMOTE_ADDR']));
+            $app->render('login_success.html.twig');
+        } else {
+
+            $log->debug(sprintf("User failed for email %s from IP %s", $email, $_SERVER['REMOTE_ADDR']));
+            $app->render('login.html.twig', array('loginFailed' => TRUE));
+        }
     }
 });
 
@@ -572,6 +588,7 @@ $app->post('/house/delete/:id', function($id = 0) use ($app) {
 //=====================================================
 //*******  ADD or UPDATE A PROPERTY  *****
 
+
 $app->get('/house/:op(/:id)', function($op, $id = 0) use ($app) {
     if (!$_SESSION['user']) {
         $app->render('first_login.html.twig');
@@ -595,6 +612,7 @@ $app->get('/house/:op(/:id)', function($op, $id = 0) use ($app) {
         ));
     }
 })->conditions(array('op' => '(add|edit)', 'id' => '[0-9]+'));
+
 
 $app->post('/house/:op(/:id)', function($op, $id = 0) use ($app) {
     if (!$_SESSION['user']) {
@@ -660,7 +678,7 @@ $app->post('/house/:op(/:id)', function($op, $id = 0) use ($app) {
             'v' => $_SESSION['user']
         ));
     } else {
-        
+
         if ($op == 'edit') {
             DB::update('houses', $valueList, 'id=%i', $id);
             $_SESSION['user']['houseId'] = $id;
@@ -668,6 +686,7 @@ $app->post('/house/:op(/:id)', function($op, $id = 0) use ($app) {
             DB::insert('houses', $valueList);
             $_SESSION['user']['houseId'] = DB::insertId();
         }
+        $_SESSION['user']['level'] = 1;
         DB::query("update users set level=1 where id=%i", $_SESSION['user']['id']);
         $app->render("message.html.twig", array(
             'message' => "property is updated/added, edit/add image now", 'link' => "/image/add"));
@@ -680,6 +699,7 @@ $app->get('/image/add', function() use ($app) {
         $app->render('first_login.html.twig');
         return;
     }
+
     $app->render("add_image.html.twig", array(
         'operation' => 'Add image'
     ));
@@ -735,6 +755,7 @@ $app->post('/image/add', function() use ($app) {
     }
 });
 
+
 $app->get('/image/edit/:id', function( $id = 0) use ($app) {
 
     if (!$_SESSION['user']) {
@@ -742,8 +763,81 @@ $app->get('/image/edit/:id', function( $id = 0) use ($app) {
         return;
     }
     $ownerId = $_SESSION['user']['id'];
+    $_SESSION['user']['houseId'] = $id;
+    $imagePath = DB::query("SELECT imagePath, id FROM imagepaths WHERE houseid=%i", $id);
+
+    print_r($imagePath);
+    $app->render('edit_image.html.twig', array(
+        'images' => $imagePath));
+});
+
+$app->post('/image/edit/:id', function( $id = 0) use ($app) {
+
+    if (!$_SESSION['user']) {
+        $app->render('first_login.html.twig');
+        return;
+    }
+    $ownerId = $_SESSION['user']['id'];
     $houseId = $_SESSION['user']['houseId'];
-    $imagePath = DB::query("SELECT imagePath FROM imagepaths WHERE houseid=%i", $id);
+    $image = $_FILES['file'];
+    $errorList = array();
+    if ($image['error'] != 0) {
+        array_push($errorList, "Image is required to create a house");
+    } else {
+        $imageInfo = getimagesize($image["tmp_name"]);
+        if (!$imageInfo) {
+            array_push($errorList, "File does not look like an valid image");
+        } else {
+// FIXME: opened a security hole here! .. must be forbidden
+            if (strstr($image["name"], "..")) {
+                array_push($errorList, "File name invalid");
+            }
+// FIXME: only allow select extensions .jpg .gif .png, never .php
+            $ext = strtolower(pathinfo($image['name'], PATHINFO_EXTENSION));
+            if (!in_array($ext, array('jpg', 'jpeg', 'gif', 'png'))) {
+                array_push($errorList, "File name invalid");
+            }
+// FIXME: do not allow file to override an previous upload
+            if (file_exists('uploads/' . $image['name'])) {
+                array_push($errorList, "File name already exists. Will not override.");
+            }
+        }
+    }
+
+    if ($errorList) {
+        $app->render("add_image.html.twig", array(
+            "errorList" => $errorList, 'operation' => 'Add image'));
+    } else {
+        $mimeType = mime_content_type($image["tmp_name"]);
+        $imagePath = "uploads/" . $image['name'];
+        move_uploaded_file($image["tmp_name"], $imagePath);
+        DB::insert('imagePaths', array(
+            'houseId' => $houseId,
+            'imagePath' => $imagePath,
+            'imageMimeType' => $mimeType
+        ));
+
+        $imagePath = DB::query("SELECT imagePath, id FROM imagepaths WHERE houseid=%i", $_SESSION['user']['houseId']);
+    }
+    print_r($imagePath);
+    $app->render('edit_image.html.twig', array('images' => $imagePath));
+});
+
+
+
+$app->get('/image/delete/:id', function( $id = 0) use ($app) {
+
+    if (!$_SESSION['user']) {
+        $app->render('first_login.html.twig');
+        return;
+    }
+    $ownerId = $_SESSION['user']['id'];
+    // $_SESSION['user']['houseId']= $id;
+    $path = DB::queryFirstField("SELECT imagePath FROM imagepaths WHERE id=%i", $id);
+    DB::delete('imagepaths', "id=%i", $id);
+    print_r($path);
+    unlink($path);
+    $imagePath = DB::query("SELECT imagePath, id FROM imagepaths WHERE houseid=%i", $_SESSION['user']['houseId']);
     $app->render('edit_image.html.twig', array(
         'images' => $imagePath));
 });
@@ -910,7 +1004,17 @@ $app->map('/passreset', function () use ($app, $log) {
 
 function debug_sql_handler($params) {
     global $log;
+
     $log->debug("SQL Command: " . $params['query']);
+}
+
+function verifyPassword($pass1) {
+    if (!preg_match('/[0-9;\'".,<>`~|!@#$%^&*()_+=-]/', $pass1) || (!preg_match('/[a-z]/', $pass1)) || (!preg_match('/[A-Z]/', $pass1)) || (strlen($pass1) < 8)) {
+        return "Password must be at least 8 characters " .
+                "long, contain at least one upper case, one lower case, " .
+                " one digit or special character";
+    }
+    return TRUE;
 }
 
 $app->map('/passreset/:secretToken', function($secretToken) use ($app) {
@@ -932,18 +1036,13 @@ $app->map('/passreset/:secretToken', function($secretToken) use ($app) {
 // TODO: verify password quality and that pass1 matches pass2
         $errorList = array();
 
-        if ($pass1 != $pass2) {
-            array_push($errorList, "Passwords do not match");
-        } else {
-            if (strlen($pass1) < 6) {
-                array_push($errorList, "Password too short, must be 6 characters or longer");
-            }
-            if (preg_match('/[A-Z]/', $pass1) != 1 || preg_match('/[a-z]/', $pass1) != 1 || preg_match('/[0-9]/', $pass1) != 1) {
-                array_push($errorList, "Password must contain at least one lowercase, "
-                        . "one uppercase letter, and a digit");
-            }
-        }
 
+        $msg = verifyPassword($pass1);
+        if ($msg !== TRUE) {
+            array_push($errorList, $msg);
+        } else if ($pass1 != $pass2) {
+            array_push($errorList, "Passwords don't match");
+        }
 //
         if ($errorList) {
             $app->render('passreset_form.html.twig', array(
