@@ -58,8 +58,137 @@ $twig->addGlobal('user', $_SESSION['user']);
 //******* Admin PAGE *********
 $app->get('/admin', function() use ($app) {
 
-    $app->render("admin_menu.html.twig");
+    $app->render("admin_index.html.twig");
 });
+
+
+// Admin_User_List 
+
+$app->get('/admin/userlist', function() use ($app) {
+    $userList = DB::query("SELECT * FROM users");
+    $app->render("admin_userlist.html.twig", array(
+        'userList' => $userList
+    ));
+});
+
+//amin_user _Delete
+$app->get('/admin/userdelete/:id', function($id) use ($app) {
+    $users = DB::queryFirstRow('SELECT * FROM users WHERE id=%i', $id);
+    $app->render('admin_user_delete.html.twig', array(
+        'u' => $users
+    ));
+});
+
+$app->post('/admin/userdelete/:id', function($id) use ($app) {
+    DB::delete('users', 'id=%i', $id);
+    $app->render('admin_delete_success.html.twig');
+});
+
+//admin_user_Add_modify
+
+$app->get('/admin/user/:op(/:id)', function($op, $id = 0) use ($app) {
+    /* FOR PROJECTS WITH MANY ACCESS LEVELS
+      if (($_SESSION['user']) || ($_SESSION['level'] != 'admin')) {
+      $app->render('forbidden.html.twig');
+      return;
+      } */
+    if ($op == 'edit') {
+        $users = DB::queryFirstRow("SELECT * FROM users WHERE id=%i", $id);
+        if (!$users) {
+            echo 'Users not found';
+            return;
+        }
+        $app->render("admin_user_add.html.twig", array(
+            'v' => $users, 'operation' => 'Update'
+        ));
+    } else {
+        $app->render("admin_user_add.html.twig", array('operation' => 'Add'
+        ));
+    }
+})->conditions(array(
+    'op' => '(add|edit)',
+    'id' => '[0-9]+'));
+
+$app->post('/admin/user/:op(/:id)', function($op, $id = 0) use ($app) {
+    $email = $app->request()->post('email');
+    $pass1 = $app->request()->post('password');
+    $pass2 = $app->request()->post('password2');
+    $firstname = $app->request()->post('firstname');
+    $lastname = $app->request()->post('lastname');
+    $level = $app->request()->post('level');
+
+// list of values to retain after a failed submission
+    $valueList = array(
+        'email' => $email,
+        'firstname' => $firstname,
+        'lastname' => $lastname
+    );
+// check for errors and collect error messages
+    $errorList = array();
+    if (filter_var($email, FILTER_VALIDATE_EMAIL) === FALSE) {
+        array_push($errorList, "Email is invalid");
+    } else {
+        $user = DB::queryFirstRow("SELECT * FROM users WHERE email=%s", $email);
+        if ($user) {
+            array_push($errorList, "Email already in use");
+        }
+    }
+    if (strlen($firstname) < 2 || strlen($firstname) > 50 ) {
+        array_push($errorList, "First Name too short or empty, must be 2 characters or longer");
+    }
+    if (strlen($lastname) < 2 || strlen($lastname) > 50) {
+        array_push($errorList, "Last Name too short or empty, must be 2 characters or longer");
+    }
+
+   /* if ($pass1 != $pass2) {
+        array_push($errorList, "Passwords do not match");
+    } else {
+        if (strlen($pass1) < 6) {
+            array_push($errorList, "Password too short, must be 6 characters or longer");
+        }
+        if (preg_match('/[A-Z]/', $pass1) != 1 || preg_match('/[a-z]/', $pass1) != 1 || preg_match('/[0-9]/', $pass1) != 1) {
+            array_push($errorList, "Password must contain at least one lowercase, "
+                    . "one uppercase letter, and a digit");
+        }
+    }*/
+
+    //
+    if ($errorList) {
+        $app->render("admin_user_add.html.twig", array(
+            'v' => $valueList,
+            "errorList" => $errorList,
+            'operation' => ($op == 'edit' ? 'Add' : 'Update')
+        ));
+    } else {
+
+
+        if ($op == 'edit') {
+
+            DB::update('users', array(
+                "email" => $email,
+                "password" => $pass1,
+                "name" => $firstname,
+                "lastName" => $lastName,
+                "level" => $level
+                    ), "id=%i", $id);
+        } else {
+            DB::insert('users', array(
+                "email" => $email,
+                "password" => $pass1,
+                "name" => $firstname,
+                "lastName" => $lastName,
+                "level" => $level
+            ));
+        }
+        $app->render("admin_user_add_success.html.twig"
+        );
+    }
+})->conditions(array(
+    'op' => '(add|edit)',
+    'id' => '[0-9]+'));
+
+
+
 
 //============================
 //******* INDEX PAGE *********
@@ -144,7 +273,7 @@ $app->get('/register', function() use ($app, $log) {
 $app->post('/register', function() use ($app, $log) {
 // extract variables
     $email = $app->request()->post('email');
-    $pass1 = $app->request()->post('password1');
+    $pass1 = $app->request()->post('password');
     $pass2 = $app->request()->post('password2');
     $firstname = $app->request()->post('firstname');
     $lastname = $app->request()->post('lastname');
@@ -233,12 +362,12 @@ $app->post('/login', function() use ($app, $log) {
         $error = true;
     } else {
         if ($user['password'] != $pass) {
-    $log->debug(sprintf("User failed for email %s from IP %s", $email, $_SERVER['REMOTE_ADDR']));
+            $log->debug(sprintf("User failed for email %s from IP %s", $email, $_SERVER['REMOTE_ADDR']));
             $error = true;
         }
     }
     if ($error) {
-  $log->debug(sprintf("User failed for email %s from IP %s", $email, $_SERVER['REMOTE_ADDR']));
+        $log->debug(sprintf("User failed for email %s from IP %s", $email, $_SERVER['REMOTE_ADDR']));
         $app->render('login.html.twig', array("error" => true));
 
 //
@@ -281,11 +410,11 @@ $app->get('/user/house', function() use ($app) {
 
     $houseList = DB::query("SELECT * FROM houses");
 
-     // FIX ME: user can list/update/delete their home
+    // FIX ME: user can list/update/delete their home
     $houseList = DB::query("SELECT *"
                     . "FROM houses INNER JOIN users ON "
                     . "houses.ownerId = users.id");
-                  //  . "WHERE ownerId=id");
+    //  . "WHERE ownerId=id");
 
 
     $HouseListWithImage = array();
@@ -406,7 +535,6 @@ $app->get('/house/delete/:id', function($id) use ($app) {
             'i' => $image
         ));
     }
-
 });
 
 $app->post('/house/delete/:id', function($id = 0) use ($app) {
@@ -663,7 +791,6 @@ $app->post('/image/:op(/:id)', function($op, $id = 0) use ($app) {
 
             DB::update('houses', $valueList, 'Id=%i', $id);
             $_SESSION['user']['houseId'] = $id;
-
         } else {
             DB::insert('houses', $valueList);
             $_SESSION['user']['houseId'] = DB::insertId();
@@ -713,57 +840,9 @@ $app->get('/image/edit/:id', function( $id = 0) use ($app) {
         'images' => $imagePath));
 });
 
-/*
-  $errorList = array();
-  if ($image['error'] != 0) {
-  array_push($errorList, "Image is required to create a house");
-  } else {
-  $imageInfo = getimagesize($image["tmp_name"]);
-  if (!$imageInfo) {
-  array_push($errorList, "File does not look like an valid image");
-  } else {
-  // FIXME: opened a security hole here! .. must be forbidden
-  if (strstr($image["name"], "..")) {
-  array_push($errorList, "File name invalid");
-  }
-  // FIXME: only allow select extensions .jpg .gif .png, never .php
-  $ext = strtolower(pathinfo($image['name'], PATHINFO_EXTENSION));
-  if (!in_array($ext, array('jpg', 'jpeg', 'gif', 'png'))) {
-  array_push($errorList, "File name invalid");
-  }
-  // FIXME: do not allow file to override an previous upload
-  if (file_exists('uploads/' . $image['name'])) {
-  array_push($errorList, "File name already exists. Will not override.");
-  }
-  }
-  }
-  if ($errorList) {
-  $app->render("add_image.html.twig", array(
-  "errorList" => $errorList, 'operation' => 'Add image'
-  ));
-  } else {
-  $oldImagePath = DB::query('SELECT * FROM imagepaths WHERE houseId=%i', $houseId);
-  //  $oldImageCounts = count($oldImagePath);
-  //  $newImageCounts = count($imageList);
-  //  if ($oldImageCounts >= $newImageCounts)
-  $c = 0;
-  foreach ($imageList as $image) {
-  $imagePath = "uploads/" . $image['name'];
-  $mimeType = mime_content_type($image["tmp_name"]);
-  move_uploaded_file($image["tmp_name"], $imagePath);
-  $houseId = $oldImagePath[$c] . ['id'];
-  DB::update('imagePaths', array(
-  'imagePath' => $imagePath,
-  'imageMimeType' => $mimeType), "houseId=%i", $houseId);
-  $c++;
-  }
-  }
-  $app->render("edit_image.html.twig", array(
-  'images' => $imagePath,
-  'operation' => ($op == 'edit' ? 'add' : 'Add another image')));
-  });
 
- */
+
+
 
 $app->post('/image/add', function() use ($app) {
 
@@ -848,7 +927,7 @@ $app->get('/aboutus', function() use ($app) {
 });
 
 
-        
+
 //******* contact us *********
 $app->get('/contactus', function() use ($app) {
 
@@ -922,10 +1001,6 @@ $app->post('/contactus', function() use ($app) {
     }
 });
 
-
-
-
-
 //================================
 //******* Password Reset *********
 function generateRandomString($length = 10) {
@@ -953,18 +1028,18 @@ $app->map('/passreset', function () use ($app, $log) {
             $secretToken = generateRandomString(50);
 // VERSION 1: delete and insert
 
-            DB::delete('passresets', 'userID=%d', $user['id']);
-            DB::insert('passresets', array(
-                'userID' => $user['id'],
-                'secretToken' => $secretToken,
-                'expiryDateTime' => date("Y-m-d H:i:s", strtotime("+5 hours"))
-            ));
-// VERSION 2: insert-update TODO
-            /* DB::insertUpdate('passresets', array(
+            /* DB::delete('passresets', 'userID=%d', $user['id']);
+              DB::insert('passresets', array(
               'userID' => $user['id'],
               'secretToken' => $secretToken,
-              'expiryDateTime' => date("Y-m-d H:i:s", strtotime("+5 minutes"))
+              'expiryDateTime' => date("Y-m-d H:i:s", strtotime("+5 hours"))
               )); */
+// VERSION 2: insert-update TODO
+            DB::insertUpdate('passresets', array(
+                'userID' => $user['id'],
+                'secretToken' => $secretToken,
+                'expiryDateTime' => date("Y-m-d H:i:s", strtotime("+5 minutes"))
+            ));
 // email user
             $url = 'http://' . $_SERVER['SERVER_NAME'] . '/passreset/' . $secretToken;
             $html = $app->view()->render('email_passreset.html.twig', array(
