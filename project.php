@@ -494,6 +494,7 @@ $app->post('/login', function() use ($app, $log) {
         $log->debug(sprintf("User failed for email %s from IP %s", $email, $_SERVER['REMOTE_ADDR']));
         $app->render('login.html.twig', array('loginFailed' => TRUE));
     } else {
+
         // password MUST be compared in PHP because SQL is case-insenstive
         //if ($user['password'] == hash('sha256', $pass)) {
         if (password_verify($pass, $user['password'])) {
@@ -503,6 +504,7 @@ $app->post('/login', function() use ($app, $log) {
             $log->debug(sprintf("User %s logged in successfuly from IP %s", $user['id'], $_SERVER['REMOTE_ADDR']));
             $app->render('login_success.html.twig');
         } else {
+
             $log->debug(sprintf("User failed for email %s from IP %s", $email, $_SERVER['REMOTE_ADDR']));
             $app->render('login.html.twig', array('loginFailed' => TRUE));
         }
@@ -800,6 +802,7 @@ $app->post('/house/:op(/:id)', function($op, $id = 0) use ($app) {
             DB::insert('houses', $valueList);
             $_SESSION['user']['houseId'] = DB::insertId();
         }
+        $_SESSION['user']['level'] = 1;
         DB::query("update users set level=1 where id=%i", $_SESSION['user']['id']);
         $app->render("message.html.twig", array(
             'message' => "property is updated/added, edit/add image now", 'link' => "/image/add"));
@@ -812,9 +815,6 @@ $app->get('/image/add', function() use ($app) {
         $app->render('first_login.html.twig');
         return;
     }
-
-
-
 
     $app->render("add_image.html.twig", array(
         'operation' => 'Add image'
@@ -879,8 +879,81 @@ $app->get('/image/edit/:id', function( $id = 0) use ($app) {
         return;
     }
     $ownerId = $_SESSION['user']['id'];
+    $_SESSION['user']['houseId'] = $id;
+    $imagePath = DB::query("SELECT imagePath, id FROM imagepaths WHERE houseid=%i", $id);
+
+    print_r($imagePath);
+    $app->render('edit_image.html.twig', array(
+        'images' => $imagePath));
+});
+
+$app->post('/image/edit/:id', function( $id = 0) use ($app) {
+
+    if (!$_SESSION['user']) {
+        $app->render('first_login.html.twig');
+        return;
+    }
+    $ownerId = $_SESSION['user']['id'];
     $houseId = $_SESSION['user']['houseId'];
-    $imagePath = DB::query("SELECT imagePath FROM imagepaths WHERE houseid=%i", $id);
+    $image = $_FILES['file'];
+    $errorList = array();
+    if ($image['error'] != 0) {
+        array_push($errorList, "Image is required to create a house");
+    } else {
+        $imageInfo = getimagesize($image["tmp_name"]);
+        if (!$imageInfo) {
+            array_push($errorList, "File does not look like an valid image");
+        } else {
+// FIXME: opened a security hole here! .. must be forbidden
+            if (strstr($image["name"], "..")) {
+                array_push($errorList, "File name invalid");
+            }
+// FIXME: only allow select extensions .jpg .gif .png, never .php
+            $ext = strtolower(pathinfo($image['name'], PATHINFO_EXTENSION));
+            if (!in_array($ext, array('jpg', 'jpeg', 'gif', 'png'))) {
+                array_push($errorList, "File name invalid");
+            }
+// FIXME: do not allow file to override an previous upload
+            if (file_exists('uploads/' . $image['name'])) {
+                array_push($errorList, "File name already exists. Will not override.");
+            }
+        }
+    }
+
+    if ($errorList) {
+        $app->render("add_image.html.twig", array(
+            "errorList" => $errorList, 'operation' => 'Add image'));
+    } else {
+        $mimeType = mime_content_type($image["tmp_name"]);
+        $imagePath = "uploads/" . $image['name'];
+        move_uploaded_file($image["tmp_name"], $imagePath);
+        DB::insert('imagePaths', array(
+            'houseId' => $houseId,
+            'imagePath' => $imagePath,
+            'imageMimeType' => $mimeType
+        ));
+
+        $imagePath = DB::query("SELECT imagePath, id FROM imagepaths WHERE houseid=%i", $_SESSION['user']['houseId']);
+    }
+    print_r($imagePath);
+    $app->render('edit_image.html.twig', array('images' => $imagePath));
+});
+
+
+
+$app->get('/image/delete/:id', function( $id = 0) use ($app) {
+
+    if (!$_SESSION['user']) {
+        $app->render('first_login.html.twig');
+        return;
+    }
+    $ownerId = $_SESSION['user']['id'];
+    // $_SESSION['user']['houseId']= $id;
+    $path = DB::queryFirstField("SELECT imagePath FROM imagepaths WHERE id=%i", $id);
+    DB::delete('imagepaths', "id=%i", $id);
+    print_r($path);
+    unlink($path);
+    $imagePath = DB::query("SELECT imagePath, id FROM imagepaths WHERE houseid=%i", $_SESSION['user']['houseId']);
     $app->render('edit_image.html.twig', array(
         'images' => $imagePath));
 });
