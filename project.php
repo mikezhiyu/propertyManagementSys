@@ -341,39 +341,55 @@ $app->get('/login', function() use ($app, $log) {
 });
 
 $app->post('/login', function() use ($app, $log) {
-//if the user allready loggedin has to logget out first then login with the other user!!!
-//is it correct?
-    /* if ($_SESSION['user']) {
-      $app->render('logout.html.twig');
-      return;
+
+
+    /* $email = $app->request()->post('email');
+      $pass = $app->request()->post('password');
+      // verification
+      $error = false;
+      $user = DB::queryFirstRow("SELECT * FROM users WHERE email=%s", $email);
+      if (!$user) {
+      $log->debug(sprintf("User failed for email %s from IP %s", $email, $_SERVER['REMOTE_ADDR']));
+      $error = true;
+      } else {
+      if ($user['password'] != $pass) {
+      $log->debug(sprintf("User failed for email %s from IP %s", $email, $_SERVER['REMOTE_ADDR']));
+      $error = true;
+      }
+      }
+      if ($error) {
+      $log->debug(sprintf("User failed for email %s from IP %s", $email, $_SERVER['REMOTE_ADDR']));
+      $app->render('login.html.twig', array("error" => true));
+
+      //
+      } else {
+      unset($user['password']);
+      $_SESSION['user'] = $user;
+
+      $log->debug(sprintf("User failed for email %s from IP %s", $user['id'], $_SERVER['REMOTE_ADDR']));
+
+      $app->render('login_success.html.twig');
       } */
 
-    $email = $app->request()->post('email');
-    $pass = $app->request()->post('password');
-// verification    
-    $error = false;
+    $email = $app->request->post('email');
+    $pass = $app->request->post('password');
     $user = DB::queryFirstRow("SELECT * FROM users WHERE email=%s", $email);
     if (!$user) {
         $log->debug(sprintf("User failed for email %s from IP %s", $email, $_SERVER['REMOTE_ADDR']));
-        $error = true;
+        $app->render('login.html.twig', array('loginFailed' => TRUE));
     } else {
-        if ($user['password'] != $pass) {
+        // password MUST be compared in PHP because SQL is case-insenstive
+        //if ($user['password'] == hash('sha256', $pass)) {
+        if (password_verify($pass, $user['password'])) {
+            // LOGIN successful
+            unset($user['password']);
+            $_SESSION['user'] = $user;
+            $log->debug(sprintf("User %s logged in successfuly from IP %s", $user['id'], $_SERVER['REMOTE_ADDR']));
+            $app->render('login_success.html.twig');
+        } else {
             $log->debug(sprintf("User failed for email %s from IP %s", $email, $_SERVER['REMOTE_ADDR']));
-            $error = true;
+            $app->render('login.html.twig', array('loginFailed' => TRUE));
         }
-    }
-    if ($error) {
-        $log->debug(sprintf("User failed for email %s from IP %s", $email, $_SERVER['REMOTE_ADDR']));
-        $app->render('login.html.twig', array("error" => true));
-
-//
-    } else {
-        unset($user['password']);
-        $_SESSION['user'] = $user;
-
-        $log->debug(sprintf("User failed for email %s from IP %s", $user['id'], $_SERVER['REMOTE_ADDR']));
-
-        $app->render('login_success.html.twig');
     }
 });
 
