@@ -324,7 +324,7 @@ $app->post('/register', function() use ($app, $log) {
             'password' => password_hash($pass1, CRYPT_BLOWFISH),
             'name' => $lastname
         ));
-        $log->debug(sprintf("User %s created", $id));
+       // $log->debug(sprintf("User %s created", $id));
         $app->render('register_success.html.twig');
     }
 });
