@@ -6,7 +6,8 @@ session_start();
 require_once 'vendor/autoload.php';
 require_once 'local.php';
 
-require_once 'facebook.php';
+//require_once 'facebook.php';
+
 use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
 
@@ -300,19 +301,14 @@ $app->post('/register', function() use ($app, $log) {
         array_push($errorList, "Last Name too short or empty, must be 2 characters or longer");
     }
 
-    if ($pass1 != $pass2) {
-        array_push($errorList, "Passwords do not match");
-    } else {
-        if (strlen($pass1) < 6) {
-            array_push($errorList, "Password too short, must be 6 characters or longer");
-        }
-        if (preg_match('/[A-Z]/', $pass1) != 1 || preg_match('/[a-z]/', $pass1) != 1 || preg_match('/[0-9]/', $pass1) != 1) {
-            array_push($errorList, "Password must contain at least one lowercase, "
-                    . "one uppercase letter, and a digit");
-        }
+    $msg = verifyPassword($pass1);
+    if ($msg !== TRUE) {
+        array_push($errorList, $msg);
+    } else if ($pass1 != $pass2) {
+        array_push($errorList, "Passwords don't match");
     }
-
-//
+    //
+    //
     if ($errorList) {
         $app->render('register.html.twig', array(
             'errorList' => $errorList,
@@ -919,7 +915,17 @@ $app->map('/passreset', function () use ($app, $log) {
 
 function debug_sql_handler($params) {
     global $log;
+
     $log->debug("SQL Command: " . $params['query']);
+}
+
+function verifyPassword($pass1) {
+    if (!preg_match('/[0-9;\'".,<>`~|!@#$%^&*()_+=-]/', $pass1) || (!preg_match('/[a-z]/', $pass1)) || (!preg_match('/[A-Z]/', $pass1)) || (strlen($pass1) < 8)) {
+        return "Password must be at least 8 characters " .
+                "long, contain at least one upper case, one lower case, " .
+                " one digit or special character";
+    }
+    return TRUE;
 }
 
 $app->map('/passreset/:secretToken', function($secretToken) use ($app) {
@@ -941,18 +947,13 @@ $app->map('/passreset/:secretToken', function($secretToken) use ($app) {
 // TODO: verify password quality and that pass1 matches pass2
         $errorList = array();
 
-        if ($pass1 != $pass2) {
-            array_push($errorList, "Passwords do not match");
-        } else {
-            if (strlen($pass1) < 6) {
-                array_push($errorList, "Password too short, must be 6 characters or longer");
-            }
-            if (preg_match('/[A-Z]/', $pass1) != 1 || preg_match('/[a-z]/', $pass1) != 1 || preg_match('/[0-9]/', $pass1) != 1) {
-                array_push($errorList, "Password must contain at least one lowercase, "
-                        . "one uppercase letter, and a digit");
-            }
-        }
 
+        $msg = verifyPassword($pass1);
+        if ($msg !== TRUE) {
+            array_push($errorList, $msg);
+        } else if ($pass1 != $pass2) {
+            array_push($errorList, "Passwords don't match");
+        }
 //
         if ($errorList) {
             $app->render('passreset_form.html.twig', array(

@@ -1,6 +1,6 @@
 <?php
 
-$app->get('/login', function() use ($app, $log) {
+$app->get('/login', function() use ($app) {
 
     $app_id = '444190482600133';
     $app_secret = '6173516210c980586572668d509c0fae';
