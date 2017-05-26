@@ -3,8 +3,8 @@
     "description": "Description of project slimfirst.",
     "authors": [
         {
-            "name": "ipd",
-            "email": "your@email.here"
+            "name": "Elmia",
+            "email": "e.amanollahi@gmail.com"
         }
     ],
     "require": {
@@ -13,11 +13,6 @@
         "slim/views": "0.1.3",
         "monolog/monolog": "1.22.1",
         "sergeytsalkov/meekrodb": "v2.3",
-        "facebook/php-sdk-v4": "~5.0@dev"
-    },
-    "require-dev": {
-        "facebook/graph-sdk": "v4.0.0",
-        "facebook/php-sdk": "v3.2.0"
-        
+        "facebook/graph-sdk": "* 5.5.0"
     }
 }
