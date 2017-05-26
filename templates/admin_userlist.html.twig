@@ -1,0 +1,53 @@
+{# empty Twig template #}
+
+
+{% extends "admin_master.html.twig" %}
+
+{% block title %}Admin UserLlist{% endblock %}
+
+
+
+{% block content %}
+
+    <div class="content">
+        <div class="header">
+
+            <h1 class="page-title">List of Users</h1>
+            <ul class="breadcrumb">
+                <li><a href="index.html">Home</a> </li>
+                <li><a href="users.html">Users</a> </li>
+
+            </ul>
+
+        </div>
+        <div class="main-content">
+
+            <ul class="nav nav-tabs">
+                <li class="active"><a href="#home" data-toggle="tab">Profile</a></li>
+
+            </ul>
+
+            <div class="container">
+
+
+                <table class="table">
+
+                    <tr><th>ID</th><th>Firstname</th><th>Lastname</th><th>Email</th><th>Operations</th></tr>
+                            {% for u in userList %}
+                        <tr><td>{{u.id}}</td>
+                              <td>{{u.name}}</td>
+                            <td>{{u.lastName}}</td>
+                          
+                            <td>{{u.email}}</td>
+
+                            <td><a href="/admin/user/edit/{{u.id}}">Edit</a>
+                                <a href="/admin/userdelete/{{u.id}}">Delete</a>
+                            </td></tr>
+                        {% endfor %}
+                </table>
+
+
+
+
+                </table>
+            {% endblock%}
