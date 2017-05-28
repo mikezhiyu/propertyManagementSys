@@ -87,17 +87,12 @@ $app->post('/admin/userdelete/:id', function($id) use ($app) {
     $message['title'] = "Admin delete successful";
     $message['message'] = "";
     $app->render('message.html.twig', $message);
-
 });
 
 //admin_user_Add_modify
 
 $app->get('/admin/user/:op(/:id)', function($op, $id = 0) use ($app) {
-    /* FOR PROJECTS WITH MANY ACCESS LEVELS
-      if (($_SESSION['user']) || ($_SESSION['level'] != 'admin')) {
-      $app->render('forbidden.html.twig');
-      return;
-      } */
+
     if ($op == 'edit') {
         $users = DB::queryFirstRow("SELECT * FROM users WHERE id=%i", $id);
         if (!$users) {
@@ -219,11 +214,11 @@ $app->post('/admin/msg/:id', function($id) use ($app) {
 
 
 //============================
->>>>>>> 09b9aee4d2ae85a479ca0b0ed7a9f45b01126401
 //******* INDEX PAGE *********
 $app->get('/', function() use ($app) {
     $app->render("index.html.twig");
 });
+
 
 $app->get('/index', function() use ($app) {
     $app->render('index.html.twig');
@@ -261,7 +256,7 @@ $app->post(':op', function($op) use ($app) {
     $houseList = DB::query("SELECT * FROM houses WHERE %l", $where);
     $HouseListWithImage = array();
     if ($search) {
-//$ci = 0;
+
         foreach ($houseList as $h) {
             $search = strtolower($search);
             $h_lower = array_map('strtolower', $h);
@@ -847,6 +842,7 @@ $app->post('/house/:op(/:id)', function($op, $id = 0) use ($app) {
     }
 })->conditions(array('op' => '(add|edit)', 'id' => '[0-9]+'));
 
+//
 $app->get('/image/:op(/:id)', function($op, $id = 0) use ($app) {
 
             if ($op == 'add') {

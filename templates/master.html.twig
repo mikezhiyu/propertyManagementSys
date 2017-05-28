@@ -57,11 +57,6 @@
                 fjs.parentNode.insertBefore(js, fjs);
             }(document, 'script', 'facebook-jssdk'));
 
-            //check login status
-            FB.getLoginStatus(function (response) {
-                statusChangeCallback(response);
-
-            });
 
         </script>
         <!-- Header Starts -->
@@ -88,12 +83,12 @@
                                 data-show-faces="true">
                             </li>
 
-                            <li style="float:right;"><!--<a href="/admin">Admin Panel</a></li>-->
+                            <li style="float:right;"><a href="/admin">Admin Panel</a></li>
 
                             <li class="active"><a href="/index">Home</a></li>
                             <li><a href="/aboutus">About</a></li>
                             <li><a href="/agents">Agents</a></li>         
-                            <li><a href="/login">Log in</a></li>
+                            <li><a href="/login" href="login_FB">Log in</a></li>
                             <li><a href="/register">Sign Up</a></li>
                             <li><a href="/contactus">Contact Us</a></li>
                             <div class="navbar-collapse  collapse" style="float:left">
