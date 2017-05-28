@@ -82,7 +82,7 @@ $app->get('/admin/userdelete/:id', function($id) use ($app) {
 
 $app->post('/admin/userdelete/:id', function($id) use ($app) {
     DB::delete('users', 'id=%i', $id);
-    $app->render('admin_delete_success.html.twig');
+    $app->render('admin_user_delete_success.html.twig');
 });
 
 //admin_user_Add_modify
@@ -187,6 +187,29 @@ $app->post('/admin/user/:op(/:id)', function($op, $id = 0) use ($app) {
 })->conditions(array(
     'op' => '(add|edit)',
     'id' => '[0-9]+'));
+
+//admin Message List
+
+$app->get('/admin/msglist', function() use ($app) {
+    $msgList = DB::query("SELECT * FROM contactUs");
+    $app->render("admin_msglist.html.twig", array(
+        'msgList' => $msgList
+    ));
+});
+
+//amin_user _Delete
+$app->get('/admin/msg/:id', function($id) use ($app) {
+    $msg = DB::queryFirstRow('SELECT * FROM contactUs WHERE id=%i', $id);
+    $app->render('admin_msg_delete.html.twig', array(
+        'm' => $msg
+    ));
+});
+
+$app->post('/admin/msg/:id', function($id) use ($app) {
+    DB::delete('users', 'id=%i', $id);
+    $app->render('admin_msg_success.html.twig');
+});
+
 
 
 

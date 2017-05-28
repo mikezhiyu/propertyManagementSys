@@ -67,10 +67,7 @@
         });
     </script>
 
-    <!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
-    <!--[if lt IE 9]>
-      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
+ 
 
     <!-- Le fav and touch icons -->
     <link rel="shortcut icon" href="../assets/ico/favicon.ico">
@@ -80,13 +77,6 @@
     <link rel="apple-touch-icon-precomposed" href="../assets/ico/apple-touch-icon-57-precomposed.png">
 
 
-    <!--[if lt IE 7 ]> <body class="ie ie6"> <![endif]-->
-    <!--[if IE 7 ]> <body class="ie ie7 "> <![endif]-->
-    <!--[if IE 8 ]> <body class="ie ie8 "> <![endif]-->
-    <!--[if IE 9 ]> <body class="ie ie9 "> <![endif]-->
-    <!--[if (gt IE 9)|!(IE)]><!--> 
-
-    <!--<![endif]-->
 
     <div class="navbar navbar-default" role="navigation">
         <div class="navbar-header">
@@ -110,7 +100,7 @@
                         <li><a href="./">My Account</a></li>
 
                         <li class="divider"></li>
-                        <li><a tabindex="-1" href="sign-in.html">Logout</a></li>
+                        <li><a tabindex="-1" href="/logout">Logout</a></li>
                     </ul>
                 </li>
             </ul>
@@ -132,10 +122,10 @@
 
         <li data-popover="true"  rel="popover" data-placement="right"><a href="#" data-target=".premium-menu" class="nav-header collapsed" data-toggle="collapse"><i class="fa fa-fw fa-fighter-jet"></i>Manage Properties<i class="fa fa-collapse"></i></a></li>
         <li><ul class="premium-menu nav nav-list collapse">
-                <li ><a href="premium-blog-item.html"><span class="fa fa-caret-right"></span> Add a Property</a></li>
-                <li ><a href="premium-profile.html"><span class="fa fa-caret-right"></span> List Property</a></li>
-                <li ><a href="premium-blog.html"><span class="fa fa-caret-right"></span> Delete Property</a></li>
-                <li ><a href="premium-blog-item.html"><span class="fa fa-caret-right"></span> Modify Properties</a></li>
+                <li ><a href="/house/add"><span class="fa fa-caret-right"></span> Add a Property</a></li>
+                <!--correct url for admin to edit and add -->
+                <li ><a href="/house/list"><span class="fa fa-caret-right"></span> List Property</a></li>
+ 
 
 
             </ul></li>
@@ -143,8 +133,8 @@
         <li><a href="#" data-target=".accounts-menu" class="nav-header collapsed" data-toggle="collapse"><i class="fa fa-fw fa-briefcase"></i> Message Management <span class="label label-info">+3</span></a></li>
         <li><ul class="accounts-menu nav nav-list collapse">
 
-                <li ><a href="sign-up.html"><span class="fa fa-caret-right"></span> Massege List</a></li>
-                <li ><a href="reset-password.html"><span class="fa fa-caret-right"></span> Reply a Message</a></li>
+                <li ><a href="/admin/msglist"><span class="fa fa-caret-right"></span> Massege List</a></li>
+                <li ><a href=""><span class="fa fa-caret-right"></span> Reply a Message</a></li>
             </ul></li>
 
         <li><a href="#" data-target=".legal-menu" class="nav-header collapsed" data-toggle="collapse"><i class="fa fa-fw fa-legal"></i> E & M REAL STATE<i class="fa fa-collapse"></i></a></li>

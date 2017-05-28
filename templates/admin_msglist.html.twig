@@ -1,0 +1,57 @@
+{# empty Twig template #}
+
+{# empty Twig template #}
+
+
+{% extends "admin_master.html.twig" %}
+
+{% block title %}Admin Message list{% endblock %}
+
+
+
+{% block content %}
+
+    <div class="content">
+        <div class="header">
+
+            <h1 class="page-title">List of Messages</h1>
+            <ul class="breadcrumb">
+                <li><a href="/admin">Home</a> </li>
+                <li><a href="">Users</a> </li>
+
+            </ul>
+
+        </div>
+        <div class="main-content">
+
+            <ul class="nav nav-tabs">
+                <li class="active"><a href="#home" data-toggle="tab">Profile</a></li>
+
+            </ul>
+
+            <div class="container">
+
+
+                <table class="table">
+
+                    <tr><th>ID</th><th>Full Name</th><th>Email</th><th>Phone Number</th><th>Message</th><th>Operations</th></tr>
+                            {% for m in msgList %}
+                        <tr><td>{{m.id}}</td>
+                             <td>{{m.fullName}}</td>
+                              <td>{{m.email}}</td>
+                            <td>{{m.phoneNumber}}</td>
+                          
+                            <td>{{m.message}}</td>
+
+                            <td>
+                                <a href="/admin/msg/{{m.id}}">Delete</a>
+                            </td></tr>
+                        {% endfor %}
+                </table>
+
+
+
+
+                </table>
+            {% endblock%}
+
