@@ -4,19 +4,20 @@
 
 {% block content %}
 
+    <div text-align="center">
     {% if errorList %}
-        <ul class="errorList">
+        <ul class="errorList" >
             {% for error in errorList %}
-                <li>{{ error }}</li>
+                <li ><h3  style="color:red;" align="center">{{ error }}</h3></li>
                 {% endfor %}
         </ul>
     {% endif %}
-    
+    </div>
     <div class="container">  
         <div id="signupbox" style="margin-left:240px;margin-top: 50px;margin-bottom: 50px" class="mainbox col-md-6 col-md-offset-3 col-sm-8 col-sm-offset-2">
             <div class="panel panel-info">
                 <div class="panel-heading">
-                    <div class="panel-title" position=center"><h4> The house {{id}}has image files</h4></div>
+                    <div class="panel-title" position="center"><h4> {{operation}} for house {{id}}</h4></div>
 
                 </div>  
                 <div class="panel-body" >
@@ -28,45 +29,44 @@
 
 
                         <form id="signupform" class="form-horizontal" role="form" method="post" enctype="multipart/form-data">
-                      
+
                             <div class="col-md-9" enctype="multipart/form-data">
                                 <label for="image" class="col-md-9 control-label"></label>
                                 <div class="form-group"> 
                                     <table> 
-                                            <th width="350"></th>
-                                             <th width="50"></th>
-                                    {% for i in images %}
-                                    <tr style="font-size:17px;margin-top: 40px "> 
-                                        <td> <img width= "300" src="/{{i.imagePath}}"/>  </td>
-                                    <td><a href="/image/update/{{i.id}}">    Replace</a><br><br>
-                                        <a href="/image/delete/{{i.id}}">    Delete</a><br><br>
-                                    </td> </tr>
-                                    {% endfor %}  
+                                        <th width="350"></th>
+                                        <th width="50"></th>
+                                            {% for i in images %}
+                                            <tr style="font-size:17px;margin-top: 40px "> 
+                                                <td> <img width= "300" src="/{{i.imagePath}}"/>  </td>
+                                                <td><a href="/image/update/{{i.id}}">    Update</a><br><br>
+                                                    <a href="/image/delete/{{i.id}}">    Delete</a><br><br>
+                                                </td> </tr>
+                                            {% endfor %}  
                                     </table>
                                 </div>
-                                
-                                <form method="post" enctype="multipart/form-data">
-                                     <input type="file" name="file" multiple>
 
-                                        <img width="300" id="myImg" src="#" alt="your image" />
-                                        <script>
-                                            $(function () {
-                                                $(":file").change(function () {
-                                                    if (this.files && this.files[0]) {
-                                                        var reader = new FileReader();
-                                                        reader.onload = imageIsLoaded;
-                                                        reader.readAsDataURL(this.files[0]);
-                                                    }
-                                                });
+                                <form method="post" enctype="multipart/form-data">
+                                   <input type="file" name="file" multiple>
+                                  <img width="300" id="myImg" src="#" alt="choose a image here" />
+                                    <script>
+                                        $(function () {
+                                            $(":file").change(function () {
+                                                if (this.files && this.files[0]) {
+                                                    var reader = new FileReader();
+                                                    reader.onload = imageIsLoaded;
+                                                    reader.readAsDataURL(this.files[0]);
+                                                }
                                             });
-                                            function imageIsLoaded(e) {
-                                                $('#myImg').attr('src', e.target.result);
-                                            }
-                                            ;
-                                        </script>
+                                        });
+                                        function imageIsLoaded(e) {
+                                            $('#myImg').attr('src', e.target.result);
+                                        }
+                                        ;
+                                    </script>
                                     <div class="form-group">          
                                         <div class="col-md-offset-3 col-md-9">
-                                        <input type="submit"  value="{{operation}}">
+                                            <input type="submit"  value="{{operation}}">
                                         </div>
                                     </div>
                                 </form>

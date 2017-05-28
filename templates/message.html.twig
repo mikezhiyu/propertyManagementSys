@@ -1,14 +1,12 @@
 {% extends "master.html.twig" %}
 
-{% block title %}{{title}}{% endblock %}
-
 {% block content %}
-    <div style="text-align: center; ">
-       
-        <h3><p style="line-height: 150%;margin-bottom: 30px" >
-                <a href="{{link}}" >{{message}}</a>  </p></h3>
-            
-    </div> 
+    
+    <div style="text-align: center;font-size: 40px;margin-top: 10px;margin-bottom: 30px;line-height: 150%">
+        <title> <h2>{{title}}</h2> </title>
+        <h3 style="color:green;">{{message}}<br>
+        <a href="{{link}}">Click to continue</a></h3>
+    </div>
 {% endblock %}
 
 
