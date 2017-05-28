@@ -729,10 +729,7 @@ $app->post('/house/delete/:id', function($id = 0) use ($app) {
 
 
 $app->get('/house/:op(/:id)', function($op, $id = 0) use ($app) {
-    if (!$_SESSION['user']) {
-        $app->render('first_login.html.twig');
-        return;
-    }
+
     $ownerId = $_SESSION['user']['id'];
     if ($op == 'edit') {
         $properties = DB::queryFirstRow("SELECT * FROM houses WHERE id=%i", $id);
@@ -832,24 +829,34 @@ $app->post('/house/:op(/:id)', function($op, $id = 0) use ($app) {
     }
 })->conditions(array('op' => '(add|edit)', 'id' => '[0-9]+'));
 
-
-$app->get('/image/add', function() use ($app) {
-    if (!$_SESSION['user']) {
-        $app->render('first_login.html.twig');
+$app->get('/image/:op(/:id)', function($op, $id = 0) use ($app) {
+    if ($op == 'add') {
+        $app->render("edit_image.html.twig", array('operation' => 'Add image'));
         return;
     }
-
-    $app->render("add_image.html.twig", array(
-        'operation' => 'Add image'
-    ));
-});
-
-$app->post('/image/add', function() use ($app) {
-
-    if (!$_SESSION['user']) {
-        $app->render('first_login.html.twig');
+    if ($op == 'delete') {
+        $path = DB::queryFirstField("SELECT imagePath FROM imagepaths WHERE id=%i", $id);
+        DB::delete('imagepaths', "id=%i", $id);
+        if (file_exists($path)) {
+            unlink($path);
+        }
+        $imagePath = DB::query("SELECT imagePath, id FROM imagepaths WHERE houseid=%i", $_SESSION['user']['houseId']);
+        $app->render('edit_image.html.twig', array(
+            'images' => $imagePath));
         return;
     }
+    if ($op == 'update') {
+        $imagePath = DB::query("SELECT imagePath, id FROM imagepaths WHERE id=%i", $id);
+        $app->render("edit_image.html.twig", array('operation' => 'Update image'));
+        return;
+    }
+    $imagePath = DB::query("SELECT imagePath, id FROM imagepaths WHERE houseid=%i", $id);
+    $app->render('edit_image.html.twig', array(
+        'images' => $imagePath, 'operation' => 'New image'));
+})->conditions(array('op' => '(add|edit|delete|update)', 'id' => '[0-9]+'));
+
+$app->post('/image/:op(/:id)', function($op, $id = 0) use ($app) {
+
     $ownerId = $_SESSION['user']['id'];
     $houseId = $_SESSION['user']['houseId'];
     $image = $_FILES['file'];
@@ -883,24 +890,22 @@ $app->post('/image/add', function() use ($app) {
     } else {
         $mimeType = mime_content_type($image["tmp_name"]);
         $imagePath = "uploads/" . $image['name'];
+
         move_uploaded_file($image["tmp_name"], $imagePath);
         DB::insert('imagePaths', array(
             'houseId' => $houseId,
             'imagePath' => $imagePath,
             'imageMimeType' => $mimeType
         ));
-        $app->render("add_image.html.twig", array(
-            'operation' => 'Add image'));
+        $imagePath = DB::query("SELECT imagePath, id FROM imagepaths WHERE houseid=%i", $_SESSION['user']['houseId']);
+        $app->render("edit_image.html.twig", array(
+            'operation' => 'Add image', 'images' => $imagePath));
     }
 });
 
 
-$app->get('/image/edit/:id', function( $id = 0) use ($app) {
+$app->get('/image/edit1/:id', function( $id = 0) use ($app) {
 
-    if (!$_SESSION['user']) {
-        $app->render('first_login.html.twig');
-        return;
-    }
     $ownerId = $_SESSION['user']['id'];
     $_SESSION['user']['houseId'] = $id;
     $imagePath = DB::query("SELECT imagePath, id FROM imagepaths WHERE houseid=%i", $id);
@@ -944,7 +949,7 @@ $app->post('/image/edit/:id', function( $id = 0) use ($app) {
     }
 
     if ($errorList) {
-        $app->render("add_image.html.twig", array(
+        $app->render("edit_image.html.twig", array(
             "errorList" => $errorList, 'operation' => 'Add image'));
     } else {
         $mimeType = mime_content_type($image["tmp_name"]);
@@ -958,24 +963,16 @@ $app->post('/image/edit/:id', function( $id = 0) use ($app) {
 
         $imagePath = DB::query("SELECT imagePath, id FROM imagepaths WHERE houseid=%i", $_SESSION['user']['houseId']);
     }
-    print_r($imagePath);
     $app->render('edit_image.html.twig', array('images' => $imagePath));
 });
 
+$app->get('/image/delete1/:id', function( $id = 0) use ($app) {
 
-
-$app->get('/image/delete/:id', function( $id = 0) use ($app) {
-
-    if (!$_SESSION['user']) {
-        $app->render('first_login.html.twig');
-        return;
-    }
-    $ownerId = $_SESSION['user']['id'];
-    // $_SESSION['user']['houseId']= $id;
     $path = DB::queryFirstField("SELECT imagePath FROM imagepaths WHERE id=%i", $id);
     DB::delete('imagepaths', "id=%i", $id);
-    print_r($path);
-    unlink($path);
+    if (file_exists($path)) {
+        unlink($path);
+    }
     $imagePath = DB::query("SELECT imagePath, id FROM imagepaths WHERE houseid=%i", $_SESSION['user']['houseId']);
     $app->render('edit_image.html.twig', array(
         'images' => $imagePath));
