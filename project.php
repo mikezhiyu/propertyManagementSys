@@ -395,7 +395,7 @@ $app->post('/login', function() use ($app, $log) {
     $user = DB::queryFirstRow("SELECT * FROM users WHERE email=%s", $email);
     if (!$user) {
         $log->debug(sprintf("User failed for email %s from IP %s", $email, $_SERVER['REMOTE_ADDR']));
-        $app->render('login.html.twig', array('loginFailed' => TRUE));
+        $app->render('login.html.twig', array('error' => TRUE));
     } else {
 
         // password MUST be compared in PHP because SQL is case-insenstive
@@ -409,7 +409,7 @@ $app->post('/login', function() use ($app, $log) {
         } else {
 
             $log->debug(sprintf("User failed for email %s from IP %s", $email, $_SERVER['REMOTE_ADDR']));
-            $app->render('login.html.twig', array('loginFailed' => TRUE));
+            $app->render('login.html.twig', array('error' => TRUE));
         }
     }
 });
@@ -1098,34 +1098,8 @@ $app->map('/passreset/:secretToken', function($secretToken) use ($app) {
     }
 })->via('GET', 'POST');
 
-$app->get('/login', function() use ($app) {
-    $app->render('login.html.twig');
-});
 
-$app->post('/login', function() use ($app) {
-    $email = $app->request->post('email');
-    $pass = $app->request->post('password');
-    $user = DB::queryFirstRow("SELECT * FROM users WHERE email=%s", $email);
-    if (!$user) {
-        $log->debug(sprintf("User failed for email %s from IP %s", $email, $_SERVER['REMOTE_ADDR']));
-        $app->render('login.html.twig', array('loginFailed' => TRUE));
-    } else {
 
-        // password MUST be compared in PHP because SQL is case-insenstive
-        //if ($user['password'] == hash('sha256', $pass)) {
-        if (password_verify($pass, $user['password'])) {
-            // LOGIN successful
-            unset($user['password']);
-            $_SESSION['user'] = $user;
-            $log->debug(sprintf("User %s logged in successfuly from IP %s", $user['id'], $_SERVER['REMOTE_ADDR']));
-            $app->render('login_success.html.twig');
-        } else {
-
-            $log->debug(sprintf("User failed for email %s from IP %s", $email, $_SERVER['REMOTE_ADDR']));
-            $app->render('login.html.twig', array('loginFailed' => TRUE));
-        }
-    }
-});
 
 
 
