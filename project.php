@@ -357,16 +357,18 @@ $app->get('/ajax/emailused/:email', function($email) {
 //=======================
 //******* Login *********
 
-$app->get('/login_FB', function() use ($app, $log) {
 
+$app->get('/login', function() use ($app, $log) {
     $app_id = '444190482600133';
     $app_secret = '6173516210c980586572668d509c0fae';
+
     $fb = new \Facebook\Facebook([
         'app_id' => $app_id,
         'app_secret' => $app_secret,
         'default_graph_version' => 'v2.9',
             //'default_access_token' => '{access-token}', // optional
     ]);
+
     // Use one of the helper classes to get a Facebook\Authentication\AccessToken entity.
     $helper = $fb->getRedirectLoginHelper();
     //   $helper = $fb->getJavaScriptHelper();
@@ -382,6 +384,36 @@ $app->get('/login_FB', function() use ($app, $log) {
         "user" => $_SESSION['user']
     ));
 });
+
+
+$app->post('/login', function() use ($app, $log) {
+
+
+
+    $email = $app->request->post('email');
+    $pass = $app->request->post('password');
+    $user = DB::queryFirstRow("SELECT * FROM users WHERE email=%s", $email);
+    if (!$user) {
+        $log->debug(sprintf("User failed for email %s from IP %s", $email, $_SERVER['REMOTE_ADDR']));
+        $app->render('login.html.twig', array('loginFailed' => TRUE));
+    } else {
+
+        // password MUST be compared in PHP because SQL is case-insenstive
+        //if ($user['password'] == hash('sha256', $pass)) {
+        if (password_verify($pass, $user['password'])) {
+            // LOGIN successful
+            unset($user['password']);
+            $_SESSION['user'] = $user;
+            $log->debug(sprintf("User %s logged in successfuly from IP %s", $user['id'], $_SERVER['REMOTE_ADDR']));
+            $app->render('login_success.html.twig');
+        } else {
+
+            $log->debug(sprintf("User failed for email %s from IP %s", $email, $_SERVER['REMOTE_ADDR']));
+            $app->render('login.html.twig', array('loginFailed' => TRUE));
+        }
+    }
+});
+
 
 
 $app->get('/fbcallback', function() use ($app) {
@@ -475,35 +507,6 @@ $app->get('/fbcallback', function() use ($app) {
 });
 
 
-
-$app->post('/login_FB', function() use ($app, $log) {
-
-
-
-
-    $email = $app->request->post('email');
-    $pass = $app->request->post('password');
-    $user = DB::queryFirstRow("SELECT * FROM users WHERE email=%s", $email);
-    if (!$user) {
-        $log->debug(sprintf("User failed for email %s from IP %s", $email, $_SERVER['REMOTE_ADDR']));
-        $app->render('login.html.twig', array('loginFailed' => TRUE));
-    } else {
-
-        // password MUST be compared in PHP because SQL is case-insenstive
-        //if ($user['password'] == hash('sha256', $pass)) {
-        if (password_verify($pass, $user['password'])) {
-            // LOGIN successful
-            unset($user['password']);
-            $_SESSION['user'] = $user;
-            $log->debug(sprintf("User %s logged in successfuly from IP %s", $user['id'], $_SERVER['REMOTE_ADDR']));
-            $app->render('login_success.html.twig');
-        } else {
-
-            $log->debug(sprintf("User failed for email %s from IP %s", $email, $_SERVER['REMOTE_ADDR']));
-            $app->render('login.html.twig', array('loginFailed' => TRUE));
-        }
-    }
-});
 
 
 //=================================
@@ -1100,24 +1103,27 @@ $app->get('/login', function() use ($app) {
 });
 
 $app->post('/login', function() use ($app) {
-    $email = $app->request()->post('email');
-    $pass = $app->request()->post('password');
-// verification    
-    $error = false;
+    $email = $app->request->post('email');
+    $pass = $app->request->post('password');
     $user = DB::queryFirstRow("SELECT * FROM users WHERE email=%s", $email);
     if (!$user) {
-        $error = true;
+        $log->debug(sprintf("User failed for email %s from IP %s", $email, $_SERVER['REMOTE_ADDR']));
+        $app->render('login.html.twig', array('loginFailed' => TRUE));
     } else {
-        if ($user['password'] != $pass) {
-            $error = true;
+
+        // password MUST be compared in PHP because SQL is case-insenstive
+        //if ($user['password'] == hash('sha256', $pass)) {
+        if (password_verify($pass, $user['password'])) {
+            // LOGIN successful
+            unset($user['password']);
+            $_SESSION['user'] = $user;
+            $log->debug(sprintf("User %s logged in successfuly from IP %s", $user['id'], $_SERVER['REMOTE_ADDR']));
+            $app->render('login_success.html.twig');
+        } else {
+
+            $log->debug(sprintf("User failed for email %s from IP %s", $email, $_SERVER['REMOTE_ADDR']));
+            $app->render('login.html.twig', array('loginFailed' => TRUE));
         }
-    }
-    if ($error) {
-        $app->render('login.html.twig', array("error" => true));
-    } else {
-        unset($user['password']);
-        $_SESSION['user'] = $user;
-        $app->render('login_success.html.twig');
     }
 });
 
