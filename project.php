@@ -206,7 +206,7 @@ $app->get('/admin/msg/:id', function($id) use ($app) {
 
 $app->post('/admin/msg/:id', function($id) use ($app) {
     DB::delete('users', 'id=%i', $id);
-    $app->render('admin_msg_success.html.twig');
+    $app->render('admin_msg_delete_success.html.twig');
 });
 
 
@@ -295,7 +295,7 @@ $app->get('/register', function() use ($app, $log) {
 // Receiving a submission
 $app->post('/register', function() use ($app, $log) {
 // extract variables
-    $email = $app->request()->post('email');
+     $email = $app->request()->post('email');
     $pass1 = $app->request()->post('password');
     $pass2 = $app->request()->post('password2');
     $firstname = $app->request()->post('firstname');
@@ -344,14 +344,7 @@ $app->post('/register', function() use ($app, $log) {
         ));
         $id = DB::insertId();
         $log->debug(sprintf("User %s created", $id));
-        $message['link'] = "/login";
-        $message['title'] = "Registration";
-        $message['message'] = "you registered successfully, now you can login";
-        $message['head'] = '<script type="text/javascript">
-        window.setTimeout(function () {window.location.href = /' / login / '; }, 5000);
-            </script>';
-        $app->render('message.html.twig', $message);
-        //  $app->render('register_success.html.twig');
+        $app->render('register_success.html.twig');
     }
 });
 // AJAX: Is user with this email already registered?
@@ -486,33 +479,7 @@ $app->get('/fbcallback', function() use ($app) {
 $app->post('/login_FB', function() use ($app, $log) {
 
 
-    /* $email = $app->request()->post('email');
-      $pass = $app->request()->post('password');
-      // verification
-      $error = false;
-      $user = DB::queryFirstRow("SELECT * FROM users WHERE email=%s", $email);
-      if (!$user) {
-      $log->debug(sprintf("User failed for email %s from IP %s", $email, $_SERVER['REMOTE_ADDR']));
-      $error = true;
-      } else {
-      if ($user['password'] != $pass) {
-      $log->debug(sprintf("User failed for email %s from IP %s", $email, $_SERVER['REMOTE_ADDR']));
-      $error = true;
-      }
-      }
-      if ($error) {
-      $log->debug(sprintf("User failed for email %s from IP %s", $email, $_SERVER['REMOTE_ADDR']));
-      $app->render('login.html.twig', array("error" => true));
 
-      //
-      } else {
-      unset($user['password']);
-      $_SESSION['user'] = $user;
-
-      $log->debug(sprintf("User failed for email %s from IP %s", $user['id'], $_SERVER['REMOTE_ADDR']));
-
-      $app->render('login_success.html.twig');
-      } */
 
     $email = $app->request->post('email');
     $pass = $app->request->post('password');
@@ -1120,7 +1087,6 @@ $app->map('/passreset/:secretToken', function($secretToken) use ($app) {
 // success - reset the password
             DB::debugMode('debug_sql_handler');
             DB::update('users', array(
-//mr mike this part cannot update the current password????!!!!
                 'password' => password_hash($pass1, CRYPT_BLOWFISH)
                     ), "id=%d", $row['userID']);
             DB::delete('passresets', 'secretToken=%s', $secretToken);
